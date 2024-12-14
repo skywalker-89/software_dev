@@ -1,0 +1,17 @@
+### Features 
+
+1. report a lost item on a website / app
+2. posting found item on a website / app
+3. claim and verify 
+4. recommendation found item too like this might be your found item using text and picture analysis AI
+5. gamification system
+    if a user found an item and gave it back the another user
+    that person will gain 10 points and that 10 points might be claimable as a reward 
+    to get a free drinks or discount on food at local business and venue 
+
+tech stack
+front end : react js (website, (responsive)), react native(mobile app)
+backend : node.js
+database : PostgreSQL
+realtime chatting and communication or phone call: look at the tech stack file
+

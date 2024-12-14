@@ -1,0 +1,4 @@
+primary color = #7ED321
+secondary color = #F5F5F5
+accent color = #FFA500
+error color = #FF5C5C
