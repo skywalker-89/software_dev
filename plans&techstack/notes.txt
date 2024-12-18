@@ -2,12 +2,42 @@
 
 1. report a lost item on a website / app
 2. posting found item on a website / app
-3. claim and verify 
+3. claim and verify by QR code 
+    - Secret item hidden features or details about them. (Optional for users)
+    chatting between users
+    push notification
+
 4. recommendation found item too like this might be your found item using text and picture analysis AI
+    -Recommendation
+    For a balance of ease of implementation and high effectiveness, I recommend:
+
+    Use Google Cloud Vision API for image recognition and similarity.
+    It’s easy to integrate with your app and highly accurate.
+    Combine with text-based similarity (using libraries like string-similarity) to cross-check item descriptions.
+
 5. gamification system
     if a user found an item and gave it back the another user
     that person will gain 10 points and that 10 points might be claimable as a reward 
     to get a free drinks or discount on food at local business and venue 
+
+6. Ads banners in the app or an ad after item returned
+
+7. Partner with Insurance Companies
+Collaborate with insurance companies to promote item insurance.
+If users lose items of high value (e.g., electronics, jewelry), suggest affordable insurance plans within the app.
+Earn commissions for every insurance policy sold through your platform.
+
+8. Commission for Rewards
+Encourage users to add reward offers for found items:
+Example: A user offers $20 to someone who returns a lost wallet.
+Charge a small commission (e.g., 5–10%) for facilitating successful claims.
+
+9. Local Business Partnerships
+Partner with local businesses such as repair shops, electronics stores, or travel services:
+Allow them to advertise their services in your app.
+Promote their solutions for lost/damaged items (e.g., repairing broken phones, replacing lost keys).
+Charge a fee for ad placements or referral commissions.
+
 
 tech stack
 front end : react js (website, (responsive)), react native(mobile app)

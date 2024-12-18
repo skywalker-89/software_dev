@@ -1,0 +1,19 @@
+@import "leaflet/dist/leaflet.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Ensure Leaflet map fills the container */
+html,
+body,
+#__next {
+  height: 100%; /* Ensure the map has full height in the layout */
+}
+
+.leaflet-container {
+  width: 100%; /* Allow the map to stretch to its container width */
+  height: 100%; /* Ensure the map fills the container's height */
+  background: #f0f0f0; /* Optional: Add a default background to see if map fails to load */
+  z-index: 0;
+}
