@@ -8,7 +8,8 @@ const MapSection = dynamic(() => import("../MapSection"), { ssr: false });
 
 const MapSectionWrapper = () => {
   return (
-    <div className="map-container">
+    <div className="h-full w-full">
+      {/* Dynamically loaded map */}
       <MapSection />
     </div>
   );

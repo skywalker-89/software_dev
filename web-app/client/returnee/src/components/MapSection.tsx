@@ -34,27 +34,27 @@ const blueIcon = new L.Icon({
 });
 
 // Custom Green Icon for current location
-const greenIcon = new L.Icon({
-  iconUrl:
-    "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-});
+// const greenIcon = new L.Icon({
+//   iconUrl:
+//     "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png",
+//   shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
+//   iconSize: [25, 41],
+//   iconAnchor: [12, 41],
+//   popupAnchor: [1, -34],
+// });
 
 const locations = [
   {
     id: 1,
     name: "Lost hand bang",
-    lat: 13.729252961011817,
-    lng: 100.775821879559,
+    lat: 13.7492,
+    lng: 100.7758,
   },
   {
     id: 2,
     name: "A pair eye glasses",
-    lat: 13.730642052856169,
-    lng: 100.78233683764122,
+    lat: 13.7306,
+    lng: 100.7823,
   },
 ];
 
@@ -90,8 +90,8 @@ const MapSection = () => {
         <MapContainer
           center={currentPosition}
           zoom={13}
-          style={{ height: "500px", width: "100%" }}
-          className="rounded-lg"
+          // style={{ height: "1080px", width: "100%" }}
+          className="rounded-lg h-full w-full"
         >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -114,7 +114,12 @@ const MapSection = () => {
           </Marker>
         </MapContainer>
       ) : (
-        <p>Loading map...</p>
+        <div className="flex items-center justify-center h-full">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-PrimaryColor border-solid"></div>
+          <p className="ml-4 text-PrimaryColor font-medium text-lg">
+            Loading map...
+          </p>
+        </div>
       )}
     </>
   );

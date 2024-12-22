@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  images: {
+    domains: ["st.depositphotos.com", "via.placeholder.com"], // Add the domain of your image source
+  },
 };
 
 export default nextConfig;

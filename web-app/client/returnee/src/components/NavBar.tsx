@@ -1,16 +1,17 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link"; // Import Link for navigation
 
-const NavBar = () => {
+const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
   return (
-    <nav className="bg-white shadow-md relative">
-      <div className="container mx-auto px-4 flex justify-between items-center h-16">
-        {/* Logo */}
+    <nav className="bg-white ">
+      <div className="px-2 flex justify-between items-center h-16">
+        {/* Logo - Aligned Left */}
         <div className="text-2xl font-bold text-gray-800">Returnee</div>
 
         {/* Hamburger Button for Mobile */}
@@ -52,37 +53,46 @@ const NavBar = () => {
         </button>
 
         {/* Desktop Menu */}
-        <div className="hidden lg:flex space-x-6 text-gray-800">
-          <a href="#" className="hover:text-PrimaryColor">
+        <div className="hidden lg:flex flex-grow items-center justify-end space-x-6 text-gray-800">
+          <Link href="/" className="hover:text-PrimaryColor">
             Home
-          </a>
-          <a href="#" className="hover:text-PrimaryColor">
-            About
-          </a>
-          <a href="#" className="hover:text-PrimaryColor">
-            Services
-          </a>
-          <a href="#" className="hover:text-PrimaryColor">
-            Contact
-          </a>
+          </Link>
+          <Link href="/report-lost-item" className="hover:text-PrimaryColor">
+            Report a lost item
+          </Link>
+          <Link href="/post-found-item" className="hover:text-PrimaryColor">
+            Post a found item
+          </Link>
+          <Link href="/chat" className="hover:text-PrimaryColor">
+            Chat
+          </Link>
+          <Link href="/account" className="ml-auto hover:text-PrimaryColor">
+            Account
+          </Link>
         </div>
 
         {/* Mobile Menu */}
         {isOpen && (
           <div className="absolute top-16 left-0 w-full bg-white lg:hidden shadow-md z-50">
             <div className="flex flex-col space-y-4 p-4 text-gray-800">
-              <a href="#" className="hover:text-PrimaryColor">
+              <Link href="/" className="hover:text-PrimaryColor">
                 Home
-              </a>
-              <a href="#" className="hover:text-PrimaryColor">
-                About
-              </a>
-              <a href="#" className="hover:text-PrimaryColor">
-                Services
-              </a>
-              <a href="#" className="hover:text-PrimaryColor">
-                Contact
-              </a>
+              </Link>
+              <Link
+                href="/report-lost-item"
+                className="hover:text-PrimaryColor"
+              >
+                Report a lost item
+              </Link>
+              <Link href="/post-found-item" className="hover:text-PrimaryColor">
+                Post a found item
+              </Link>
+              <Link href="/chat" className="hover:text-PrimaryColor">
+                Chat
+              </Link>
+              <Link href="/account" className="hover:text-PrimaryColor">
+                Account
+              </Link>
             </div>
           </div>
         )}
@@ -91,4 +101,4 @@ const NavBar = () => {
   );
 };
 
-export default NavBar;
+export default Navbar;
