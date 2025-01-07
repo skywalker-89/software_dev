@@ -5,6 +5,7 @@ export default StyleSheet.create({
     flex: 1,
     backgroundColor: "#F5F5F5",
     padding: 10,
+    marginTop: 50,
   },
   chatCard: {
     flexDirection: "row",

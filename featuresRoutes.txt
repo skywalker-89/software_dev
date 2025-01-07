@@ -1,0 +1,13 @@
+Routes these are the  routes that we need to make.
+# Login
+# Register
+# Logout
+# Delete Account
+
+# Post a lost item
+# Matching a lost item and found post
+# Post a found item
+# delete a Posted found item
+# delete a Posted Lost item
+
+# texting and chatlogs tracker and keep the chatlogs too

@@ -1,0 +1,3 @@
+design login page app and web
+design register page app and web
+connect auth backend with frontend app and web

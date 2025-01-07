@@ -1,5 +1,12 @@
 import React from "react";
-import { View, TextInput, FlatList, Text } from "react-native";
+import {
+  View,
+  TextInput,
+  FlatList,
+  Text,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
 import SearchScreenStyle from "../screenStyles/SearchScreenStyle";
 
 export default function SearchScreen() {
@@ -9,22 +16,29 @@ export default function SearchScreen() {
   ];
 
   return (
-    <View style={SearchScreenStyle.container}>
-      <TextInput
-        placeholder="Search items..."
-        style={SearchScreenStyle.searchBar}
-        placeholderTextColor="#C4C4C4"
-      />
-      <FlatList
-        data={data}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={SearchScreenStyle.card}>
-            <Text style={SearchScreenStyle.itemName}>{item.name}</Text>
-            <Text style={SearchScreenStyle.itemLocation}>{item.location}</Text>
-          </View>
-        )}
-      />
-    </View>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <View style={SearchScreenStyle.container}>
+        <TextInput
+          placeholder="Search items..."
+          style={SearchScreenStyle.searchBar}
+          placeholderTextColor="#C4C4C4"
+        />
+        <FlatList
+          data={data}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <View style={SearchScreenStyle.card}>
+              <Text style={SearchScreenStyle.itemName}>{item.name}</Text>
+              <Text style={SearchScreenStyle.itemLocation}>
+                {item.location}
+              </Text>
+            </View>
+          )}
+        />
+      </View>
+    </KeyboardAvoidingView>
   );
 }
