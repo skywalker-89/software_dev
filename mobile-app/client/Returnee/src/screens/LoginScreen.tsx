@@ -47,7 +47,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
 
     try {
       // Make API call
-      const response = await fetch("http://localhost:1111/auth/login", {
+      const response = await fetch("http://10.66.6.141:1111/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
