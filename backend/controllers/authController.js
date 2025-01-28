@@ -107,3 +107,54 @@ exports.deleteAccount = async (req, res) => {
     res.status(500).json({ message: "Error deleting account", error });
   }
 };
+
+exports.googleAuthCallback = async (req, res) => {
+  try {
+    const profile = req.user;
+    console.log("Google Profile Data:", profile); // Debugging log
+
+    const email = profile._json.email;
+    const first_name =
+      profile._json.given_name ||
+      profile.name?.givenName ||
+      profile.displayName?.split(" ")[0];
+    const last_name =
+      profile._json.family_name ||
+      profile.name?.familyName ||
+      profile.displayName?.split(" ")[1];
+
+    console.log("Extracted Name:", { first_name, last_name }); // Debug log
+
+    let result = await pool.query(
+      "SELECT * FROM public.users WHERE email = $1",
+      [email]
+    );
+    let user;
+
+    if (result.rows.length > 0) {
+      user = result.rows[0];
+    } else {
+      // Insert new user
+      result = await pool.query(
+        "INSERT INTO public.users (email, first_name, last_name, created_at, updated_at) VALUES ($1, $2, $3, NOW(), NOW()) RETURNING id, email, first_name, last_name",
+        [email, first_name, last_name]
+      );
+      user = result.rows[0];
+    }
+
+    // Generate JWT Token
+    const token = jwt.sign({ id: user.id }, "jwt_secret_key", {
+      expiresIn: "365d",
+    });
+
+    // 🔹 Redirect back to frontend with token and user data
+    return res.redirect(
+      `http://localhost:3000/google-auth-success?token=${token}&user=${encodeURIComponent(
+        JSON.stringify(user)
+      )}`
+    );
+  } catch (error) {
+    console.error("Error during Google login: ", error);
+    res.status(500).json({ message: "Error during Google login", error });
+  }
+};

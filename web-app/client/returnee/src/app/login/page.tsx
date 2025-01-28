@@ -45,6 +45,11 @@ const LoginPage: React.FC = () => {
     }
   };
 
+  // 🔹 Google Login Function
+  const handleGoogleLogin = () => {
+    window.location.href = "http://localhost:1111/auth/google"; // Redirect to backend Google OAuth
+  };
+
   return (
     <div className="flex h-screen">
       {/* Left Side - Login Form */}
@@ -60,6 +65,7 @@ const LoginPage: React.FC = () => {
           <div className="flex flex-col gap-4">
             <button
               type="button"
+              onClick={handleGoogleLogin}
               className="p-3 border rounded-lg shadow-sm flex items-center justify-center gap-2 bg-white hover:bg-gray-100"
             >
               <FcGoogle className="h-6 w-6" />
@@ -119,11 +125,15 @@ const LoginPage: React.FC = () => {
           </div>
         </form>
 
+        {/* Navigate to Register Page */}
         <div className="mt-4 text-gray-500">
           Don’t have an account?{" "}
-          <a href="#" className="text-AccentColor hover:text-AccentColorHover">
+          <button
+            onClick={() => router.push("/register")}
+            className="text-AccentColor hover:text-AccentColorHover"
+          >
             Create an account
-          </a>
+          </button>
         </div>
       </div>
 

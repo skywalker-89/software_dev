@@ -54,6 +54,11 @@ const RegisterPage: React.FC = () => {
     }
   };
 
+  const handleGoogleLogin = () => {
+    // Redirect to backend Google OAuth endpoint
+    window.location.href = "http://localhost:1111/auth/google";
+  };
+
   return (
     <div className="flex flex-col md:flex-row h-screen">
       {/* Left Side - Register Form */}
@@ -72,6 +77,7 @@ const RegisterPage: React.FC = () => {
           <div className="flex flex-col gap-4">
             <button
               type="button"
+              onClick={handleGoogleLogin}
               className="p-3 border rounded-lg shadow-sm flex items-center justify-center gap-2 bg-white hover:bg-gray-100"
             >
               <FcGoogle className="h-6 w-6" />

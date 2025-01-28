@@ -1,3 +1,5 @@
-design login page app and web
-design register page app and web
-connect auth backend with frontend app and web
+google auth
+once registed with google the firstname and lastname name will be stored in the data base 
+ fetch first name and last name from google
+ email and phone from google too 
+and users can login with google again and again 
