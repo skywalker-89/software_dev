@@ -3,3 +3,72 @@ once registed with google the firstname and lastname name will be stored in the 
  fetch first name and last name from google
  email and phone from google too 
 and users can login with google again and again 
+
+
+before letting the user post lost or found item users must login into the app first 
+
+30 jan 2025
+connect the front end part of the code with the backend
+
+while the post is uploading make screen white blur abit and show the loading animation
+
+once the uploading is done dont just alert the user by normal web
+notify users by green bubble that will appear once the uploading is done.
+
+
+set up post found item route and connect it to the front end 
+
+fetch all the posts on to the home page and mark all the lost and found items on to the homepage map 
+and showing only the items that shows up on the map there. (near by location)
+
+move the default map to the current location
+
+list all the posted uncliaim items onto the search result 
+and configure the mapping part to to list only the item that are unclaim 
+
+make the item cards clickable and navigate to the item page 
+    -design the item page 
+        - adjusting the layouts and having zoom in zoom out in the pictures too
+
+    - mark map and zoom in picture
+
+
+claim the item is done (Lost)
+
+
+
+make another dedicated page for Return The item (found)
+
+if the users want to return the item they have to send the 
+
+
+gmail or sms sent to the user and they can set pick up time for that.
+
+once both users agree to return and receive things the receiver set the time and place to pick up the thing.
+
+
+in order to claim the item users need to id verification first 
+    - add another column inside of the users verified and unverify and showing the satus at the account page 
+    - add another column in the "user" table called verification (verified/not verified)
+    - request claim if verified 
+        can get in easily
+    - if not  verifired 
+        navigate to the verification page first and notify user that please verify before claiming item.
+
+leave at the infomation center of the places. (function)
+- design the infomation center reciever return website too.
+
+once i clicked on the button should i navigate to another page 
+
+lost item : 
+click Request Claim -> Select Time and Place of to return things -> Chat Created -> Email sent to the returner 
+-> in that email if that user agree to use to the time and place they can click in that email if 
+they dont they can talk to the receive person there by via click link in the gmail sent to chat 
+with another user for another time and place. -> 
+once both users agreed on the time -> the system generate a qr code for the request claim user. 
+-> users met scan qr and got the thing. 
+
+likely match algorithm (basic first it can be advance later on)
+
+
+pick up location field can be up to the conversation ot any infomation centers near the area

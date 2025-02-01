@@ -1,22 +1,26 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { useDropzone } from "react-dropzone";
-import dynamic from "next/dynamic";
+// import dynamic from "next/dynamic";
 import Navbar from "../../components/Navbar";
 import { PhotoIcon } from "@heroicons/react/24/outline";
+import SelectableMap from "../../components/SelectableMap";
+import toast, { Toaster } from "react-hot-toast"; // ✅ Import toast
 
 // Dynamically load the map component (for Leaflet or any mapping library)
-const MapSection = dynamic(() => import("../../components/MapSection"), {
-  ssr: false,
-});
+// const MapSection = dynamic(() => import("../../components/MapSection"), {
+//   ssr: false,
+// });
 
 const FoundItem = () => {
   const [images, setImages] = useState<File[]>([]);
+  const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [lastSeen, setLastSeen] = useState("");
+  const [foundLocation, setFoundLocation] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
+  const [loading, setLoading] = useState(false); // ✅ Loading state for overlay
 
   const onDrop = (acceptedFiles: File[]) => {
     setImages((prev) => [...prev, ...acceptedFiles]);
@@ -30,15 +34,82 @@ const FoundItem = () => {
     multiple: true,
   });
 
-  const handleSubmit = () => {
-    const formData = {
-      images,
-      description,
-      lastSeen,
-      time: selectedDate,
-    };
-    console.log("Form Data Submitted: ", formData);
-    alert("Lost item report submitted successfully!");
+  const [selectedLocation, setSelectedLocation] = useState({
+    lat: 0,
+    lng: 0,
+  });
+
+  const handleLocationSelect = (lat: number, lng: number) => {
+    setSelectedLocation({ lat, lng });
+  };
+
+  const [user, setUser] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+    id: "",
+  });
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (error) {
+        console.error("Error parsing user data:", error);
+      }
+    }
+  }, []);
+
+  const handleSubmit = async () => {
+    if (images.length === 0) {
+      toast.error("Please upload at least one image.");
+      return;
+    }
+
+    setLoading(true); // ✅ Show loading overlay
+
+    // Prepare FormData to sned images + other data
+    const formData = new FormData();
+    images.forEach((images) => {
+      formData.append("images", images); // must match backend field name
+    });
+
+    formData.append("title", title);
+    formData.append("description", description);
+    formData.append("found_location", foundLocation);
+    formData.append("latitude", selectedLocation.lat.toString());
+    formData.append("longitude", selectedLocation.lng.toString());
+    formData.append("founder_id", user.id); // change dynamically
+
+    try {
+      const response = await fetch(
+        "http://localhost:1111/items/post-found-item",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to submit found item report.");
+      }
+
+      const result = await response.json();
+      console.log("Success:", result);
+      setLoading(false); // ✅ Hide loading overlay
+      toast.success("Found item report submitted successfully.");
+
+      setTitle("");
+      setImages([]);
+      setDescription("");
+      setFoundLocation("");
+      setSelectedDate("");
+      setSelectedLocation({ lat: 0, lng: 0 });
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Failed to submit found item report.");
+    }
   };
 
   const removeImage = (index: number) => {
@@ -47,9 +118,17 @@ const FoundItem = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
+      <Toaster position="bottom-right" /> {/* ✅ Notification system */}
+      {loading && (
+        <div className="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center z-50">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-PrimaryColor border-solid"></div>
+          <p className="ml-4 text-PrimaryColor font-medium text-lg">
+            Reporting lost item...
+          </p>
+        </div>
+      )}
       {/* Navbar */}
       <Navbar />
-
       {/* Content */}
       <main className="w-full max-w-full max-h-full h-full mx-auto mt-0 bg-white p-6">
         <h1 className="text-2xl font-bold mb-6">Post Found Item</h1>
@@ -57,6 +136,18 @@ const FoundItem = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Left Column */}
           <div className="space-y-6">
+            {/* Title Field */}
+            <div>
+              <label className="block text-sm font-medium mb-2">Title</label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Enter a title for the found item..."
+                className="w-full p-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
+                aria-label="Title"
+              />
+            </div>
             {/* Select Images Field */}
             <div>
               <label className="block text-sm font-medium mb-2">
@@ -134,8 +225,8 @@ const FoundItem = () => {
               </label>
               <input
                 type="text"
-                value={lastSeen}
-                onChange={(e) => setLastSeen(e.target.value)}
+                value={foundLocation}
+                onChange={(e) => setFoundLocation(e.target.value)}
                 placeholder="Where did you found this item?"
                 className="w-full p-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
                 aria-label="Last seen location"
@@ -148,7 +239,7 @@ const FoundItem = () => {
                 Pick Location on the Map
               </label>
               <div className="w-full h-64 border rounded-lg overflow-hidden">
-                <MapSection />
+                <SelectableMap onLocationSelect={handleLocationSelect} />
               </div>
             </div>
 

@@ -1,30 +1,37 @@
 const express = require("express");
 const router = express.Router();
+const itemsController = require("../controllers/itemsController");
+const upload = require("../config/multerConfig"); // 🔹 Import Multer configuration
 
-//Post a Lost Item
-router.get("/post-lost-item", (req, res) => {
-  res.send("Post Lost item");
-});
+// 🟢 Post a Lost Item (Multiple Images)
+router.post(
+  "/post-lost-item",
+  upload.array("images", 10),
+  itemsController.postLostItem
+);
 
-//Post a found item
-router.get("/post-found-item", (req, res) => {
-  res.send("Post a Found item");
-});
+// 🟢 Post a Found Item (Multiple Images)
+router.post(
+  "/post-found-item",
+  upload.array("images", 10),
+  itemsController.postFoundItem
+);
 
-//resquest match found item
-// this will continue create the chat for both found and lost item users
-router.get("/matched-items", (req, res) => {
-  res.send("Matched a found item");
-});
+// 🟢 Request Match Found Item
+router.get("/matched-items", itemsController.requestMatch);
 
-//delete a found item post
-router.get("/del-found-item", (req, res) => {
-  res.send("Delete a found item post");
-});
+// 🟢 Delete a Found Item Post
+router.delete("/del-found-item/:id", itemsController.deleteFoundItem);
 
-//delete a lost item post
-router.get("/del-lost-item", (req, res) => {
-  res.send("Delete a lost item post");
-});
+// 🟢 Delete a Lost Item Post
+router.delete("/del-lost-item/:id", itemsController.deleteLostItem);
+
+// 🟢 Get All Lost Items
+router.get("/lost-items", itemsController.getLostItems);
+
+// 🟢 Get All Found Items
+router.get("/found-items", itemsController.getFoundItems);
+
+router.get("/:id", itemsController.getItemById);
 
 module.exports = router;
