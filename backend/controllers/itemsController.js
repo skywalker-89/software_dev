@@ -254,12 +254,27 @@ exports.deleteLostItem = async (req, res) => {
   }
 };
 
-// 🟢 Get Item by ID
+// 🟢 Get Item by ID (Including Poster Email)
 exports.getItemById = async (req, res) => {
   try {
     const { id } = req.params;
+
     const result = await pool.query(
-      "SELECT * FROM lost_items WHERE id = $1 UNION ALL SELECT * FROM found_items WHERE id = $1",
+      `SELECT 
+        i.*, 
+        u.email AS poster_email, 
+        u.first_name AS poster_first_name, 
+        u.last_name AS poster_last_name
+      FROM (
+        SELECT id, title, status, description, last_seen_location, latitude, longitude, image_urls, created_at, owner_id as user_id
+        FROM lost_items
+        WHERE id = $1
+        UNION ALL
+        SELECT id, title, status, description, found_location as last_seen_location, latitude, longitude, image_urls, created_at, founder_id as user_id
+        FROM found_items
+        WHERE id = $1
+      ) i
+      JOIN users u ON i.user_id = u.id`,
       [id]
     );
 

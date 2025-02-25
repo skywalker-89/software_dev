@@ -5,6 +5,10 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Navbar from "../../../components/Navbar";
 import ItemMapSection from "../../../components/ItemMapsection";
+import SelectTimeAndPlace from "../../../components/popup/SelectTimeAndPlace";
+import toast, { Toaster } from "react-hot-toast"; // ✅ Import toast
+import SendPicRequest from "../../../components/popup/SendPicRequest";
+import VerifiedFirst from "../../../components/popup/VerifiedFirst";
 
 interface Item {
   id: string;
@@ -16,6 +20,9 @@ interface Item {
   images: string[];
   latitude: number;
   longitude: number;
+  posterEmail: string;
+  posterFirstName: string;
+  posterLastName: string;
 }
 
 const ItemDetail = () => {
@@ -23,6 +30,27 @@ const ItemDetail = () => {
   const [item, setItem] = useState<Item | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false); // 🔍 Image zoom modal
+  const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
+  const [isVerifiedModalOpen, setIsVerifiedModalOpen] = useState(false); // For unverified users
+
+  const [user, setUser] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+    verified: "",
+  });
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+        console.log(user);
+      } catch (error) {
+        console.error("Error parsing user data:", error);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (!id) return;
@@ -64,6 +92,9 @@ const ItemDetail = () => {
           latitude: data.latitude,
           longitude: data.longitude,
           images: parsedImages,
+          posterEmail: data.poster_email,
+          posterFirstName: data.poster_first_name,
+          posterLastName: data.poster_last_name,
         });
       } catch (error) {
         console.error("Error fetching item:", error);
@@ -87,16 +118,72 @@ const ItemDetail = () => {
 
   // 🟢 Function for Request Claim (for Lost Items)
   const requestClaim = () => {
-    console.log("Request Claim function triggered");
+    if (user.verified === "verified") {
+      setIsRequestModalOpen(true); // Proceed if verified
+      console.log("Request Claim function triggered");
+      console.log(user.email);
+      return;
+    }
+    setIsVerifiedModalOpen(true); // Show VerifiedFirst modal
+    console.log("User not verified. Showing verification modal.");
   };
 
   // 🟢 Function for Return Item (for Found Items)
   const returnItem = () => {
-    console.log("Return Item function triggered");
+    if (user.verified === "verified") {
+      setIsRequestModalOpen(true); // Proceed if verified
+      console.log("Request Claim function triggered");
+      console.log(user.email);
+      return;
+    }
+    setIsVerifiedModalOpen(true); // Show VerifiedFirst modal
+    console.log("User not verified. Showing verification modal.");
+  };
+
+  // Function to handle request submission
+  const handleSendRequest = async (location: string, dateTime: string) => {
+    if (!user || !item) return;
+
+    try {
+      console.log(item.posterEmail);
+      await fetch("http://localhost:1111/email/send-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          recipientEmail: item.posterEmail, // ✅ Ensure this matches backend
+          firstName: user.first_name,
+          lastName: user.last_name,
+          senderEmail: user.email,
+          location,
+          dateTime,
+          type: item.status === "lost" ? "claim" : "return",
+        }),
+      });
+
+      toast.success("Request sent successfully!");
+    } catch (error) {
+      console.error("Error sending request:", error);
+      toast.error("Failed to send request. Please try again later.");
+    }
+  };
+
+  const handleSendPicRequest = async (formData: FormData) => {
+    try {
+      await fetch("http://localhost:1111/email/send-email-pic", {
+        method: "POST",
+        body: formData,
+      });
+
+      toast.success("Request sent successfully with images!");
+    } catch (error) {
+      console.error("Error sending request:", error);
+      toast.error("Failed to send request. Please try again later.");
+    }
   };
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
+      <Toaster position="bottom-right" />
       <Navbar />
 
       <div className="container mx-auto p-6 flex flex-col lg:flex-row gap-6">
@@ -172,7 +259,7 @@ const ItemDetail = () => {
           {/* Map Section */}
           <div className="p-4 bg-gray-100 rounded-lg shadow">
             <h2 className="font-bold text-lg mb-2">Location on Map</h2>
-            <div className="w-full h-96 rounded-lg overflow-hidden">
+            <div className="w-full h-108 rounded-lg overflow-hidden">
               <ItemMapSection
                 latitude={item.latitude}
                 longitude={item.longitude}
@@ -248,6 +335,31 @@ const ItemDetail = () => {
             </button>
           </div>
         </div>
+      )}
+      {/* 🟢 Show Modal when Request Claim is clicked */}
+      {isRequestModalOpen &&
+        (item.status === "lost" ? (
+          <SendPicRequest
+            onClose={() => setIsRequestModalOpen(false)}
+            onSendRequest={handleSendPicRequest}
+            recipientEmail={item.posterEmail}
+            firstName={user.first_name}
+            lastName={user.last_name}
+            senderEmail={user.email}
+          />
+        ) : (
+          <SelectTimeAndPlace
+            onClose={() => setIsRequestModalOpen(false)}
+            onSendRequest={handleSendRequest}
+            recipientEmail={item.posterEmail}
+            firstName={user.first_name}
+            lastName={user.last_name}
+            senderEmail={user.email}
+            type="claim"
+          />
+        ))}
+      {isVerifiedModalOpen && (
+        <VerifiedFirst onClose={() => setIsVerifiedModalOpen(false)} />
       )}
     </div>
   );

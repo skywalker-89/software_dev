@@ -50,6 +50,11 @@ const LoginPage: React.FC = () => {
     window.location.href = "http://localhost:1111/auth/google"; // Redirect to backend Google OAuth
   };
 
+  // 🔹 Facebook Login Function
+  const handleFacebookLogin = () => {
+    window.location.href = "http://localhost:1111/auth/facebook"; // Redirect to backend Facebook OAuth
+  };
+
   return (
     <div className="flex h-screen">
       {/* Left Side - Login Form */}
@@ -73,6 +78,7 @@ const LoginPage: React.FC = () => {
             </button>
             <button
               type="button"
+              onClick={handleFacebookLogin}
               className="p-3 border rounded-lg shadow-sm flex items-center justify-center gap-2 bg-white hover:bg-gray-100"
             >
               <FaFacebook className="h-6 w-6 text-blue-600" />

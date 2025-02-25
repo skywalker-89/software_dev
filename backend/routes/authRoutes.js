@@ -29,4 +29,20 @@ router.get(
   authController.googleAuthCallback
 );
 
+// 🟦 Facebook Auth Route
+router.get(
+  "/facebook",
+  passport.authenticate("facebook", { scope: ["email"] }) // Requesting email permission
+);
+
+// 🔹 GET User Data Route (NEW)
+router.get("/me", authMiddleware.protect, authController.getUserData);
+
+// 🟦 Facebook Auth Callback
+router.get(
+  "/facebook/callback",
+  passport.authenticate("facebook", { failureRedirect: "/login" }),
+  authController.facebookAuthCallback
+);
+
 module.exports = router;

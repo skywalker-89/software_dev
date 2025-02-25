@@ -4,6 +4,10 @@ once registed with google the firstname and lastname name will be stored in the 
  email and phone from google too 
 and users can login with google again and again 
 
+$$$ gmail and password for our gmail acc 
+ GMAIL : returneedeveloper@gmail.com 
+ PASS : Returnee2025
+
 
 before letting the user post lost or found item users must login into the app first 
 
@@ -72,3 +76,56 @@ likely match algorithm (basic first it can be advance later on)
 
 
 pick up location field can be up to the conversation ot any infomation centers near the area
+
+
+*** for chatting use MessageQeuue and web socket *** 
+*** for emailing i am going to use nodemailer ***
+    -adjusting the email notification of the website using Toaster instead of alert 
+
+For Returning stuffs make and Request form that ask the user to put the picture into it too. (Return Request)
+
+
+*** chat system ***
+use Mongo DB to store the chat logs 
+
+Final Answer?
+✨ Your system is a mix of both:
+✅ Pub/Sub for real-time messaging (when both users are online).
+✅ Queue Messaging for offline messages (when the recipient is unavailable).
+
+This setup ensures instant messaging, message reliability, and smooth UX! 🚀🔥
+
+once a user clicked on verify button there the id card and face pics will be sent onto the cloudinary.
+
+
+create another mechanism if a user is not verified they cant send the email to the founder or the looser of the items 
+    > create another column in the user table "verified" the statuses will be "verified" and "not_verified" (psql)
+    > the admin of the app work here. 
+    stages that user will see 
+        > verified 
+        > pending 
+        > please upload the picture again (unclear photos)
+        > blank (inputs are open)
+        > please upload the picture again (unclear photos)
+    >* redesign the statuses designs 
+
+
+> work on the chatting system *** 
+
+
+> user need to ne verified first in order to chage their email and password (work on this 22/02/2025)
+    ^^^ user need to be verified first inorder to have be able to send the request on the request claim or request return button
+        **** if the user is not verified just pop up a modal saying please verified first in order to send the requests.
+
+> create a link in gmail to navigate to chat. that created *****
+    ***** if this item is yours click here confirm here if you are free at this ..... confirm here type of button if not 
+        just click chat
+    (prevent opening the new tab.)
+
+    ^^^^ chat room with another user created when B response to A request if he is not ok with the location and the time.
+> once a user clicked on chat button in the gmil navigate to the chat room of that user with the poster.
+
+
+> set up socket.io(pub/sub) and for live chat in the front end save chat logs in mongoDB the messages that were sent in live will be stored
+in mogoDB as read message but the non live chat will be handle as (queue message)
+

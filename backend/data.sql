@@ -23,3 +23,17 @@ CREATE TABLE found_items (
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
 );
+
+CREATE TABLE messages (
+    id SERIAL PRIMARY KEY,
+    sender_id INT NOT NULL,
+    receiver_id INT NOT NULL,
+    content TEXT,
+    created_at TIMESTAMP DEFAULT NOW(),
+    is_read BOOLEAN DEFAULT FALSE
+);
+
+-- verify user by admin
+UPDATE users
+SET verified = 'verified'
+WHERE id = 1;  -- Change user ID as needed

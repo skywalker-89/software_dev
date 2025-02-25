@@ -59,6 +59,11 @@ const RegisterPage: React.FC = () => {
     window.location.href = "http://localhost:1111/auth/google";
   };
 
+  // 🔹 Facebook Login Function
+  const handleFacebookLogin = () => {
+    window.location.href = "http://localhost:1111/auth/facebook"; // Redirect to backend Facebook OAuth
+  };
+
   return (
     <div className="flex flex-col md:flex-row h-screen">
       {/* Left Side - Register Form */}
@@ -85,6 +90,7 @@ const RegisterPage: React.FC = () => {
             </button>
             <button
               type="button"
+              onClick={handleFacebookLogin}
               className="p-3 border rounded-lg shadow-sm flex items-center justify-center gap-2 bg-white hover:bg-gray-100"
             >
               <FaFacebook className="h-6 w-6 text-blue-600" />

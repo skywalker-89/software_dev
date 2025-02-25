@@ -25,10 +25,10 @@ exports.register = async (req, res) => {
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Insert new user
+    // Insert new user with verified set to 'not_verified'
     const result = await pool.query(
-      "INSERT INTO public.users (email, password_hash, first_name, last_name, phone_number, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, NOW(), NOW()) RETURNING id, email, first_name, last_name, phone_number",
-      [email, hashedPassword, firstName, lastName, phoneNumber]
+      "INSERT INTO public.users (email, password_hash, first_name, last_name, phone_number, verified, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW()) RETURNING id, email, first_name, last_name, phone_number, verified",
+      [email, hashedPassword, firstName, lastName, phoneNumber, "not_verified"]
     );
 
     const user = result.rows[0]; // Get inserted user data
@@ -77,6 +77,7 @@ exports.login = async (req, res) => {
         first_name: user.first_name,
         last_name: user.last_name,
         phone_number: user.phone_number,
+        verified: user.verified, // ✅ Include verified status
       },
     });
   } catch (error) {
@@ -134,10 +135,10 @@ exports.googleAuthCallback = async (req, res) => {
     if (result.rows.length > 0) {
       user = result.rows[0];
     } else {
-      // Insert new user
+      // Insert new user with verified set to 'verified'
       result = await pool.query(
-        "INSERT INTO public.users (email, first_name, last_name, created_at, updated_at) VALUES ($1, $2, $3, NOW(), NOW()) RETURNING id, email, first_name, last_name",
-        [email, first_name, last_name]
+        "INSERT INTO public.users (email, first_name, last_name, verified, created_at, updated_at) VALUES ($1, $2, $3, $4, NOW(), NOW()) RETURNING id, email, first_name, last_name, verified",
+        [email, first_name, last_name, "verified"]
       );
       user = result.rows[0];
     }
@@ -156,5 +157,83 @@ exports.googleAuthCallback = async (req, res) => {
   } catch (error) {
     console.error("Error during Google login: ", error);
     res.status(500).json({ message: "Error during Google login", error });
+  }
+};
+
+exports.facebookAuthCallback = async (req, res) => {
+  try {
+    const profile = req.user;
+    console.log("Facebook Profile Data:", profile); // Debugging log
+
+    const email = profile.emails?.[0]?.value || null; // Facebook may not always provide email
+    const first_name =
+      profile.name?.givenName ||
+      profile.displayName?.split(" ")[0] ||
+      "Unknown";
+    const last_name =
+      profile.name?.familyName || profile.displayName?.split(" ")[1] || "User";
+
+    console.log("Extracted Name:", { first_name, last_name, email }); // Debug log
+
+    if (!email) {
+      return res
+        .status(400)
+        .json({ message: "Email is required from Facebook login." });
+    }
+
+    let result = await pool.query(
+      "SELECT * FROM public.users WHERE email = $1",
+      [email]
+    );
+    let user;
+
+    if (result.rows.length > 0) {
+      user = result.rows[0];
+    } else {
+      // Insert new user with verified set to 'verified'
+      result = await pool.query(
+        "INSERT INTO public.users (email, first_name, last_name, verified, created_at, updated_at) VALUES ($1, $2, $3, $4, NOW(), NOW()) RETURNING id, email, first_name, last_name, verified",
+        [email, first_name, last_name, "verified"]
+      );
+      user = result.rows[0];
+    }
+
+    // Generate JWT Token
+    const token = jwt.sign({ id: user.id }, "jwt_secret_key", {
+      expiresIn: "365d",
+    });
+
+    // 🔹 Redirect back to frontend with token and user data
+    return res.redirect(
+      `http://localhost:3000/facebook-auth-success?token=${token}&user=${encodeURIComponent(
+        JSON.stringify(user)
+      )}`
+    );
+  } catch (error) {
+    console.error("Error during Facebook login: ", error);
+    res.status(500).json({ message: "Error during Facebook login", error });
+  }
+};
+
+// 🔹 GET USER DATA (New Function)
+exports.getUserData = async (req, res) => {
+  try {
+    const userId = req.user.id; // Extract user ID from token
+
+    const result = await pool.query(
+      "SELECT id, email, first_name, last_name, phone_number, verified FROM public.users WHERE id = $1",
+      [userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const user = result.rows[0];
+
+    res.json({ user });
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+    res.status(500).json({ message: "Error fetching user data", error });
   }
 };

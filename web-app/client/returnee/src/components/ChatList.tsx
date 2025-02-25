@@ -7,9 +7,9 @@ interface ChatListProps {
 
 const ChatList: React.FC<ChatListProps> = ({ chats, onSelectChat }) => {
   return (
-    <div className="w-full md:w-1/3 h-full bg-gray-100 border-r flex flex-col">
+    <div className="w-full h-full bg-gray-100 border-r flex flex-col">
       {/* Header */}
-      <h2 className="text-lg font-bold p-4 text-gray-800 border-b sticky top-0 bg-gray-100 z-10">
+      <h2 className="text-lg font-bold p-4 text-gray-800 border-b bg-gray-100 sticky top-0 z-10">
         Chats List
       </h2>
 

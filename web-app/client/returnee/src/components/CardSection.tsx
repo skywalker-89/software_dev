@@ -50,38 +50,34 @@ const CardSection: React.FC<CardSectionProps> = ({ category, searchQuery }) => {
             parsedImages = item.image_urls
               .map((element) => {
                 if (typeof element === "string") {
-                  // Check for JSON objects or arrays
+                  // Check if the string is a JSON object or array
                   if (
                     (element.startsWith("{") && element.endsWith("}")) ||
                     (element.startsWith("[") && element.endsWith("]"))
                   ) {
                     try {
-                      const fixedJsonString = element.replace(/'/g, '"');
-                      const parsed = JSON.parse(fixedJsonString);
+                      const parsed = JSON.parse(element);
 
-                      // Handle arrays (e.g., ["url1", "url2"])
                       if (Array.isArray(parsed)) {
                         return parsed.filter((url) => typeof url === "string");
-                      }
-                      // Handle objects (e.g., {"url": "https://..."})
-                      else if (typeof parsed === "object") {
+                      } else if (typeof parsed === "object") {
                         return Object.values(parsed).filter(
                           (url) => typeof url === "string"
                         );
-                      }
-                      // Handle strings (e.g., "https://...")
-                      else if (typeof parsed === "string") {
+                      } else if (typeof parsed === "string") {
                         return parsed;
                       }
                     } catch (error) {
-                      // Fallback: Extract all URLs using regex
-                      console.error("❌ Error fetching items:", error);
+                      console.log(error);
+                      console.warn(
+                        "⚠️ JSON parsing failed, using regex fallback:",
+                        element
+                      );
                       const urlMatches = element.match(/https?:\/\/[^\s"]+/g);
                       return urlMatches || null;
                     }
                   } else {
-                    // Treat as a direct URL
-                    return element;
+                    return element; // Treat as direct URL
                   }
                 }
                 return null;

@@ -11,3 +11,10 @@ Routes these are the  routes that we need to make.
 # delete a Posted Lost item
 
 # texting and chatlogs tracker and keep the chatlogs too
+
+
+MongoDB
+julforschool2
+Mhzb1UOno0Bo7WkF
+
+mongodb+srv://testuser:123@test1.idb6t.mongodb.net/?retryWrites=true&w=majority&appName=Test1

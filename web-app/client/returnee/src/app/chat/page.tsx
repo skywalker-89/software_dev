@@ -11,43 +11,166 @@ const ChatPage = () => {
   const chats = [
     {
       id: "1",
-      name: "Alex Hunt",
+      name: "Sophia Smith",
       messages: [
         {
-          sender: "You",
-          content: "Hello Alex!",
+          sender: "Sophia Smith",
+          content: "Hey, did you check the new designs?",
           avatar: "https://via.placeholder.com/40",
-          time: "09:00",
+          time: "10:00 AM",
+          isMine: false,
         },
-        {
-          sender: "Alex Hunt",
-          content: "How are you?",
-          avatar: "https://via.placeholder.com/40",
-          time: "09:01",
-        },
-      ],
-    },
-    {
-      id: "2",
-      name: "John Doe",
-      messages: [
         {
           sender: "You",
-          content: "Hi John!",
+          content: "Of course! They're looking great!",
           avatar: "https://via.placeholder.com/40",
-          time: "09:05",
+          time: "10:02 AM",
+          isMine: true,
         },
         {
-          sender: "John Doe",
-          content: "Let's catch up soon.",
+          sender: "Sophia Smith",
+          content: "Hey, did you check the new designs?",
           avatar: "https://via.placeholder.com/40",
-          time: "09:06",
+          time: "10:00 AM",
+          isMine: false,
+        },
+        {
+          sender: "You",
+          content: "Of course! They're looking great!",
+          avatar: "https://via.placeholder.com/40",
+          time: "10:02 AM",
+          isMine: true,
+        },
+        {
+          sender: "Sophia Smith",
+          content: "Hey, did you check the new designs?",
+          avatar: "https://via.placeholder.com/40",
+          time: "10:00 AM",
+          isMine: false,
+        },
+        {
+          sender: "You",
+          content: "Of course! They're looking great!",
+          avatar: "https://via.placeholder.com/40",
+          time: "10:02 AM",
+          isMine: true,
+        },
+        {
+          sender: "Sophia Smith",
+          content: "Hey, did you check the new designs?",
+          avatar: "https://via.placeholder.com/40",
+          time: "10:00 AM",
+          isMine: false,
+        },
+        {
+          sender: "You",
+          content: "Of course! They're looking great!",
+          avatar: "https://via.placeholder.com/40",
+          time: "10:02 AM",
+          isMine: true,
+        },
+        {
+          sender: "Sophia Smith",
+          content: "Hey, did you check the new designs?",
+          avatar: "https://via.placeholder.com/40",
+          time: "10:00 AM",
+          isMine: false,
+        },
+        {
+          sender: "You",
+          content: "Of course! They're looking great!",
+          avatar: "https://via.placeholder.com/40",
+          time: "10:02 AM",
+          isMine: true,
+        },
+        {
+          sender: "Sophia Smith",
+          content: "Hey, did you check the new designs?",
+          avatar: "https://via.placeholder.com/40",
+          time: "10:00 AM",
+          isMine: false,
+        },
+        {
+          sender: "You",
+          content: "Of course! They're looking great!",
+          avatar: "https://via.placeholder.com/40",
+          time: "10:02 AM",
+          isMine: true,
+        },
+        {
+          sender: "Sophia Smith",
+          content: "Hey, did you check the new designs?",
+          avatar: "https://via.placeholder.com/40",
+          time: "10:00 AM",
+          isMine: false,
+        },
+        {
+          sender: "You",
+          content: "Of course! They're looking great!",
+          avatar: "https://via.placeholder.com/40",
+          time: "10:02 AM",
+          isMine: true,
+        },
+        {
+          sender: "Sophia Smith",
+          content: "Hey, did you check the new designs?",
+          avatar: "https://via.placeholder.com/40",
+          time: "10:00 AM",
+          isMine: false,
+        },
+        {
+          sender: "You",
+          content: "Of course! They're looking great!",
+          avatar: "https://via.placeholder.com/40",
+          time: "10:02 AM",
+          isMine: true,
+        },
+        {
+          sender: "Sophia Smith",
+          content: "Hey, did you check the new designs?",
+          avatar: "https://via.placeholder.com/40",
+          time: "10:00 AM",
+          isMine: false,
+        },
+        {
+          sender: "You",
+          content: "Of course! They're looking great!",
+          avatar: "https://via.placeholder.com/40",
+          time: "10:02 AM",
+          isMine: true,
+        },
+        {
+          sender: "Sophia Smith",
+          content: "Hey, did you check the new designs?",
+          avatar: "https://via.placeholder.com/40",
+          time: "10:00 AM",
+          isMine: false,
+        },
+        {
+          sender: "You",
+          content: "Of course! They're looking great!",
+          avatar: "https://via.placeholder.com/40",
+          time: "10:02 AM",
+          isMine: true,
+        },
+        {
+          sender: "Sophia Smith",
+          content: "Hey, did you check the new designs?",
+          avatar: "https://via.placeholder.com/40",
+          time: "10:00 AM",
+          isMine: false,
+        },
+        {
+          sender: "You",
+          content: "Of course! They're looking great!",
+          avatar: "https://via.placeholder.com/40",
+          time: "10:02 AM",
+          isMine: true,
         },
       ],
     },
   ];
 
-  // Prevent body scroll when page loads
   useEffect(() => {
     document.body.style.overflow = "hidden";
     return () => {
@@ -58,21 +181,34 @@ const ChatPage = () => {
   return (
     <div className="flex flex-col h-screen bg-gray-100">
       <Navbar />
-      <div className="flex-1 flex flex-col md:flex-row h-full">
-        {/* ChatList Scroll Fix */}
-        {selectedChatId === null || window.innerWidth >= 768 ? (
+      <div className="flex flex-1 h-full overflow-hidden">
+        {/* Chat List should take up 1/3 width on desktop, full width on mobile */}
+        <div
+          className={`${
+            selectedChatId ? "hidden md:flex" : "flex"
+          } w-full md:w-1/3 h-full border-r bg-white`}
+        >
           <ChatList chats={chats} onSelectChat={setSelectedChatId} />
-        ) : null}
+        </div>
 
-        {selectedChatId !== null && (
-          <div className="flex-1">
+        {/* Chat area should take full space when selected */}
+        <div
+          className={`flex-1 h-full ${
+            selectedChatId ? "flex" : "hidden"
+          } md:flex`}
+        >
+          {selectedChatId ? (
             <Chat
               chatId={selectedChatId}
               chats={chats}
               onBack={() => setSelectedChatId(null)}
             />
-          </div>
-        )}
+          ) : (
+            <div className="flex-1 flex items-center justify-center text-gray-500">
+              Select a chat to start messaging
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -3,9 +3,11 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "../../components/Navbar";
 import PrivacyAndPolicy from "../../components/SettingsComponents/PrivacyAndPolicySection";
-import EditProfileSection from "../../components/SettingsComponents/EditProfileSection";
 import AccountSetting from "../../components/SettingsComponents/AccountSetting";
 import ItemHistorySection from "../../components/SettingsComponents/ItemHistorySection";
+import Image from "next/image";
+
+const API_URL = "http://localhost:1111/auth/me";
 
 interface SettingListProps {
   closeMenu: () => void;
@@ -17,7 +19,6 @@ const SettingList: React.FC<SettingListProps> = ({
   setActiveComponent,
 }) => {
   const settings = [
-    { name: "Edit Profile", component: "EditProfile" },
     { name: "Account Setting", component: "AccountSetting" },
     { name: "Items History", component: "ItemsHistory" },
     { name: "Privacy & Policy", component: "PrivacyPolicy" },
@@ -29,28 +30,98 @@ const SettingList: React.FC<SettingListProps> = ({
     first_name: "",
     last_name: "",
     email: "",
+    profilePicture: "",
+    verified: "", // Add verificationStatus here
   });
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
+    const fetchUserData = async () => {
+      const token = localStorage.getItem("token");
+
       try {
-        setUser(JSON.parse(storedUser));
+        const response = await fetch(API_URL, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch user data");
+        }
+
+        const data = await response.json();
+        setUser(data.user);
+
+        // Save user data to local storage
+        localStorage.setItem("user", JSON.stringify(data.user));
       } catch (error) {
-        console.error("Error parsing user data:", error);
+        console.error("Error fetching user:", error);
       }
-    }
+    };
+
+    fetchUserData();
   }, []);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const newProfilePicture = reader.result as string;
+        setUser((prevUser) => ({
+          ...prevUser,
+          profilePicture: newProfilePicture,
+        }));
+        localStorage.setItem(
+          "user",
+          JSON.stringify({ ...user, profilePicture: newProfilePicture })
+        );
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   return (
     <div className="w-64 h-full bg-white p-4 shadow-lg md:shadow-none md:border-r border-gray-300 md:h-screen">
       <div className="text-center mb-6 hidden md:block">
-        <div className="w-20 h-20 rounded-full bg-gray-400 mx-auto"></div>
+        {/* Profile Picture */}
+        <div className="relative w-20 h-20 mx-auto rounded-full overflow-hidden group">
+          {user.profilePicture ? (
+            <Image
+              src={user.profilePicture}
+              alt="Profile"
+              width={80}
+              height={80}
+              className="rounded-full object-cover w-full h-full"
+            />
+          ) : (
+            <div className="w-20 h-20 rounded-full bg-gray-400"></div>
+          )}
+
+          {/* Hover Overlay */}
+          <label
+            className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+            htmlFor="fileInput"
+          >
+            <p className="text-white text-sm font-medium">Edit</p>
+          </label>
+          <input
+            type="file"
+            id="fileInput"
+            accept="image/*"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+        </div>
+
         <h4 className="mt-2 text-lg font-semibold">
           {user.first_name} {user.last_name}
         </h4>
         <p className="text-sm text-gray-600">{user.email}</p>
       </div>
+
       {settings.map((item, index) => (
         <div
           key={index}
@@ -81,46 +152,104 @@ const Logout: React.FC = () => {
   return null;
 };
 
-const DeleteAccount = () => <div className="p-6">Delete Account Component</div>;
-
 const AccountPage: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [activeComponent, setActiveComponent] = useState("EditProfile");
-  const [user, setUser] = useState({
-    first_name: "",
-    last_name: "",
-    email: "",
-  });
-
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error("Error parsing user data:", error);
-      }
-    }
-  }, []);
+  const [activeComponent, setActiveComponent] = useState("AccountSetting");
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const closeMenu = () => setIsMenuOpen(false);
 
+  const [user, setUser] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+    profilePicture: "",
+    verified: "", // Add verificationStatus here
+  });
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const token = localStorage.getItem("token");
+
+      try {
+        const response = await fetch(API_URL, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch user data");
+        }
+
+        const data = await response.json();
+        setUser(data.user);
+
+        // Save user data to local storage
+        localStorage.setItem("user", JSON.stringify(data.user));
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  // ✅ Updated handleFileChange to maintain user state
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const newProfilePicture = reader.result as string;
+        setUser((prevUser) => ({
+          ...prevUser,
+          profilePicture: newProfilePicture,
+        }));
+        localStorage.setItem(
+          "user",
+          JSON.stringify({ ...user, profilePicture: newProfilePicture })
+        );
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const components: Record<string, React.ReactNode> = {
-    EditProfile: <EditProfileSection />,
-    AccountSetting: <AccountSetting />,
+    AccountSetting: <AccountSetting user={user} setUser={setUser} />,
     ItemsHistory: <ItemHistorySection />,
     PrivacyPolicy: <PrivacyAndPolicy />,
     Logout: <Logout />,
-    DeleteAccount: <DeleteAccount />,
   };
 
   return (
     <div className="flex flex-col h-screen">
       <Navbar />
+      {/* 🔹 Mobile Profile Section */}
       <div className="p-4 md:hidden flex justify-between items-center bg-white border-b shadow">
         <div className="flex items-center space-x-4">
-          <div className="w-10 h-10 rounded-full bg-gray-400"></div>
+          {/* 🔹 Profile Picture in Mobile Navbar */}
+          <label className="relative w-10 h-10 rounded-full bg-gray-400 overflow-hidden cursor-pointer">
+            {user.profilePicture ? (
+              <Image
+                src={user.profilePicture}
+                alt="Profile"
+                width={40}
+                height={40}
+                className="rounded-full object-cover w-full h-full"
+              />
+            ) : (
+              <div className="w-10 h-10 bg-gray-400 rounded-full"></div>
+            )}
+            <input
+              type="file"
+              className="hidden"
+              accept="image/*"
+              onChange={handleFileChange}
+            />
+          </label>
           <h4 className="text-lg font-semibold">
             {user.first_name} {user.last_name}
           </h4>
