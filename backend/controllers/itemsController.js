@@ -266,11 +266,11 @@ exports.getItemById = async (req, res) => {
         u.first_name AS poster_first_name, 
         u.last_name AS poster_last_name
       FROM (
-        SELECT id, title, status, description, last_seen_location, latitude, longitude, image_urls, created_at, owner_id as user_id
+        SELECT id, title, status, description, last_seen_location, latitude, longitude, image_urls, created_at, owner_id as user_id, 'lost' as item_type
         FROM lost_items
         WHERE id = $1
         UNION ALL
-        SELECT id, title, status, description, found_location as last_seen_location, latitude, longitude, image_urls, created_at, founder_id as user_id
+        SELECT id, title, status, description, found_location as last_seen_location, latitude, longitude, image_urls, created_at, founder_id as user_id, 'found' as item_type
         FROM found_items
         WHERE id = $1
       ) i
@@ -282,9 +282,112 @@ exports.getItemById = async (req, res) => {
       return res.status(404).json({ message: "Item not found" });
     }
 
-    res.json(result.rows[0]);
+    const item = result.rows[0];
+
+    // Adjust the logic based on whether it's a lost or found item
+    if (item.item_type === "lost") {
+      item.owner_id = item.user_id;
+      delete item.founder_id; // Just in case it's returned from the found items query
+    } else if (item.item_type === "found") {
+      item.founder_id = item.user_id;
+      delete item.owner_id; // Just in case it's returned from the lost items query
+    }
+
+    res.json(item);
   } catch (error) {
     console.error("Error fetching item:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+// 🟢 Get Item by Specific ID
+exports.getItemBySpecificId = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await pool.query(
+      `SELECT 
+        i.*, 
+        u.email AS poster_email, 
+        u.first_name AS poster_first_name, 
+        u.last_name AS poster_last_name
+      FROM (
+        SELECT id, title, status, description, last_seen_location, latitude, longitude, image_urls, created_at, owner_id as user_id, 'lost' as item_type
+        FROM lost_items
+        WHERE id = $1
+        UNION ALL
+        SELECT id, title, status, description, found_location as last_seen_location, latitude, longitude, image_urls, created_at, founder_id as user_id, 'found' as item_type
+        FROM found_items
+        WHERE id = $1
+      ) i
+      JOIN users u ON i.user_id = u.id`,
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Item not found" });
+    }
+
+    const item = result.rows[0];
+
+    // Adjust the logic based on whether it's a lost or found item
+    if (item.item_type === "lost") {
+      item.owner_id = item.user_id;
+      delete item.founder_id; // Just in case it's returned from the found items query
+    } else if (item.item_type === "found") {
+      item.founder_id = item.user_id;
+      delete item.owner_id; // Just in case it's returned from the lost items query
+    }
+
+    res.json(item);
+  } catch (error) {
+    console.error("Error fetching item:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+// 🟢 Claim an Item
+exports.setClaimItem = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { time, userId } = req.query; // Extract time and userId from query parameters
+
+    if (!userId || !time) {
+      return res
+        .status(400)
+        .json({ message: "Missing userId or time parameter" });
+    }
+
+    // Check if the item exists in lost_items
+    let result = await pool.query("SELECT * FROM lost_items WHERE id = $1", [
+      id,
+    ]);
+
+    if (result.rows.length > 0) {
+      // Update the status, claim_by, and claimed_at in lost_items
+      await pool.query(
+        "UPDATE lost_items SET status = 'claimed', claim_by = $1, claimed_at = $2 WHERE id = $3",
+        [userId, time, id]
+      );
+      return res.json({ message: "Lost item claimed successfully" });
+    }
+
+    // Check if the item exists in found_items
+    result = await pool.query("SELECT * FROM found_items WHERE id = $1", [id]);
+
+    if (result.rows.length > 0) {
+      // Update the status, claim_by, and claimed_at in found_items
+      await pool.query(
+        "UPDATE found_items SET status = 'claimed', claim_by = $1, claimed_at = $2 WHERE id = $3",
+        [userId, time, id]
+      );
+      return res.json({ message: "Found item claimed successfully" });
+    }
+
+    // If the item does not exist in either table
+    res.status(404).json({ message: "Item not found" });
+  } catch (error) {
+    console.error("Error claiming item:", error);
     res.status(500).json({ message: "Server error", error });
   }
 };

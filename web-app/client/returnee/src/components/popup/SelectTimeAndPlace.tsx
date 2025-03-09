@@ -9,13 +9,19 @@ interface SelectTimeAndPlaceProps {
     location: string,
     dateTime: string,
     type: "claim" | "return",
-    senderEmail: string
+    senderEmail: string,
+    user_id: string,
+    poster_id: string,
+    item_id: string
   ) => Promise<void>;
   recipientEmail: string;
   firstName: string;
   lastName: string;
   senderEmail: string;
+  user_id: string; // ✅ Add user_id
+  poster_id: string; // ✅ Add poster_id
   type: "claim" | "return";
+  item_id: string;
 }
 
 const SelectTimeAndPlace: React.FC<SelectTimeAndPlaceProps> = ({
@@ -23,6 +29,9 @@ const SelectTimeAndPlace: React.FC<SelectTimeAndPlaceProps> = ({
   onSendRequest,
   type,
   senderEmail,
+  user_id, // ✅ Destructure user_id
+  poster_id, // ✅ Destructure poster_id
+  item_id,
 }) => {
   const [location, setLocation] = useState("");
   const [dateTime, setDateTime] = useState("");
@@ -31,6 +40,9 @@ const SelectTimeAndPlace: React.FC<SelectTimeAndPlaceProps> = ({
   const handleSubmit = async () => {
     console.log("🟡 handleSubmit() FUNCTION CALLED!");
     console.log("Sender Email:", senderEmail);
+    console.log("User ID:", user_id);
+    console.log("Poster ID:", poster_id);
+    console.log("Item id:", item_id);
 
     if (!location || !dateTime) {
       toast.error("Please enter a location and select a date & time.");
@@ -41,7 +53,17 @@ const SelectTimeAndPlace: React.FC<SelectTimeAndPlaceProps> = ({
 
     try {
       console.log("📧 Sending request via parent function");
-      await onSendRequest(location, dateTime, type, senderEmail);
+      console.log("This is the user id", user_id);
+      console.log("This is the poster id", poster_id);
+      await onSendRequest(
+        location,
+        dateTime,
+        type,
+        senderEmail,
+        user_id,
+        poster_id,
+        item_id
+      );
       // toast.success("✅ Request sent successfully!");
       onClose();
     } catch (error) {

@@ -23,6 +23,8 @@ interface Item {
   posterEmail: string;
   posterFirstName: string;
   posterLastName: string;
+  owner_id?: string; // Assuming owner_id exists for lost items
+  founder_id?: string; // Assuming founder_id exists for found items
 }
 
 const ItemDetail = () => {
@@ -37,6 +39,7 @@ const ItemDetail = () => {
     first_name: "",
     last_name: "",
     email: "",
+    id: "",
     verified: "",
   });
 
@@ -95,6 +98,8 @@ const ItemDetail = () => {
           posterEmail: data.poster_email,
           posterFirstName: data.poster_first_name,
           posterLastName: data.poster_last_name,
+          owner_id: data.owner_id,
+          founder_id: data.founder_id,
         });
       } catch (error) {
         console.error("Error fetching item:", error);
@@ -122,6 +127,8 @@ const ItemDetail = () => {
       setIsRequestModalOpen(true); // Proceed if verified
       console.log("Request Claim function triggered");
       console.log(user.email);
+      console.log("This is user ID", user.id);
+      console.log("This is poster id", item.founder_id);
       return;
     }
     setIsVerifiedModalOpen(true); // Show VerifiedFirst modal
@@ -134,6 +141,9 @@ const ItemDetail = () => {
       setIsRequestModalOpen(true); // Proceed if verified
       console.log("Request Claim function triggered");
       console.log(user.email);
+      console.log("This is user ID", user.id);
+      console.log("This is poster id", item.owner_id);
+
       return;
     }
     setIsVerifiedModalOpen(true); // Show VerifiedFirst modal
@@ -157,6 +167,10 @@ const ItemDetail = () => {
           location,
           dateTime,
           type: item.status === "lost" ? "claim" : "return",
+          user_id: user.id,
+          poster_id: item.owner_id || item.founder_id || "",
+          title: item.title,
+          id: item.id,
         }),
       });
 
@@ -346,6 +360,9 @@ const ItemDetail = () => {
             firstName={user.first_name}
             lastName={user.last_name}
             senderEmail={user.email}
+            user_id={user.id}
+            poster_id={item.owner_id || ""}
+            item_id={item.id || ""}
           />
         ) : (
           <SelectTimeAndPlace
@@ -355,7 +372,10 @@ const ItemDetail = () => {
             firstName={user.first_name}
             lastName={user.last_name}
             senderEmail={user.email}
+            user_id={user.id}
+            poster_id={item.founder_id || ""}
             type="claim"
+            item_id={item.id || ""}
           />
         ))}
       {isVerifiedModalOpen && (

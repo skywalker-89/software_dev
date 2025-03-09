@@ -6,33 +6,46 @@ exports.verifyUser = async (req, res) => {
   try {
     const { first_name, last_name, user_id } = req.body;
     const files = req.files; // Get uploaded images (ID + Face)
+    console.log("This is ", user_id);
 
     if (!first_name || !last_name || !user_id) {
       return res.status(400).json({ message: "Missing user information" });
     }
 
-    if (!files || files.length !== 2) {
+    if (!files || !files["id_card"] || !files["face_picture"]) {
       return res
         .status(400)
         .json({ message: "Both ID card and face picture are required" });
     }
 
+    // Extract files correctly
+    const idCardFile = files["id_card"][0];
+    const facePictureFile = files["face_picture"][0];
+
     // 🔹 Create folder name based on user details
     const userFolder = `verifications/${first_name}_${last_name}_${user_id}`;
 
-    // 🔹 Upload images to Cloudinary
-    const uploadPromises = files.map((file, index) => {
+    // 🔹 Cloudinary Upload Helper Function
+    const uploadToCloudinary = (fileBuffer) => {
       return new Promise((resolve, reject) => {
         cloudinary.uploader
-          .upload_stream({ folder: userFolder }, (error, cloudinaryResult) => {
+          .upload_stream({ folder: userFolder }, (error, result) => {
             if (error) reject(error);
-            else resolve(cloudinaryResult.secure_url);
+            else resolve(result.secure_url);
           })
-          .end(file.buffer);
+          .end(fileBuffer);
       });
-    });
+    };
 
-    const [idCardUrl, facePictureUrl] = await Promise.all(uploadPromises);
+    const [idCardUrl, facePictureUrl] = await Promise.all([
+      uploadToCloudinary(idCardFile.buffer),
+      uploadToCloudinary(facePictureFile.buffer),
+    ]);
+
+    // 🔹 Update user's verified status to 'pending'
+    await pool.query(`UPDATE users SET verified = 'pending' WHERE id = $1`, [
+      user_id,
+    ]);
 
     // 🔹 Return Cloudinary URLs as response
     res.status(201).json({

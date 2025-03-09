@@ -1,9 +1,10 @@
 "use client";
 import React, { useState, useRef, useCallback } from "react";
-import { IdentificationIcon } from "@heroicons/react/24/outline";
+import { IdentificationIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useDropzone } from "react-dropzone";
 import Image from "next/image";
 import Webcam from "react-webcam";
+import { useEffect } from "react";
 
 interface VerificationFormProps {
   onSubmit: (status: "pending" | "unclear") => void;
@@ -13,7 +14,29 @@ const VerificationForm: React.FC<VerificationFormProps> = ({ onSubmit }) => {
   const [images, setImages] = useState<File[]>([]);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
+  const [zoomedImage, setZoomedImage] = useState<string | null>(null);
+
+  const [user, setUser] = useState({
+    first_name: "",
+    last_name: "",
+    id: "",
+  });
+
+  const [loading, setLoading] = useState(false);
   const webcamRef = useRef<Webcam>(null);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      console.log("Current user:", user);
+    }
+  }, [user]);
 
   // Handle Image Upload
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -21,11 +44,6 @@ const VerificationForm: React.FC<VerificationFormProps> = ({ onSubmit }) => {
     onDrop: (acceptedFiles) => setImages([...images, ...acceptedFiles]),
   });
 
-  // const removeImage = (index: number) => {
-  //   setImages(images.filter((_, i) => i !== index));
-  // };
-
-  // Handle Webcam Capture
   const handleOpenCamera = () => setIsScanning(true);
 
   const handleCapture = useCallback(() => {
@@ -37,6 +55,45 @@ const VerificationForm: React.FC<VerificationFormProps> = ({ onSubmit }) => {
       }
     }
   }, []);
+
+  const handleSubmit = async () => {
+    if (!user || images.length === 0 || !capturedImage) {
+      alert("Please upload both ID and face image.");
+      return;
+    }
+
+    setLoading(true);
+    const formData = new FormData();
+    formData.append("first_name", user.first_name);
+    formData.append("last_name", user.last_name);
+    formData.append("user_id", user.id);
+    formData.append("id_card", images[0]);
+    formData.append(
+      "face_picture",
+      await fetch(capturedImage).then((res) => res.blob())
+    );
+
+    try {
+      const response = await fetch(
+        "http://localhost:1111/verification/submit",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (response.ok) {
+        onSubmit("pending");
+      } else {
+        alert("Verification failed. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error submitting verification:", error);
+      alert("An error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="w-full">
@@ -60,6 +117,23 @@ const VerificationForm: React.FC<VerificationFormProps> = ({ onSubmit }) => {
           </p>
         </div>
       </div>
+
+      {/* Display Selected ID Card Image */}
+      {images.length > 0 && (
+        <div className="mt-4 flex justify-center mb-6">
+          <div
+            className="relative w-80 h-52 border border-gray-300 shadow-lg rounded-lg overflow-hidden"
+            onClick={() => setZoomedImage(URL.createObjectURL(images[0]))}
+          >
+            <Image
+              src={URL.createObjectURL(images[0])}
+              alt="Selected ID"
+              layout="fill"
+              objectFit="cover"
+            />
+          </div>
+        </div>
+      )}
 
       {/* Face Scan Button - Forced to Match Email/Password Width */}
       <div className="w-full">
@@ -105,8 +179,11 @@ const VerificationForm: React.FC<VerificationFormProps> = ({ onSubmit }) => {
 
       {/* Display Captured Face Image */}
       {capturedImage && (
-        <div className="mt-4">
-          <div className="relative w-64 h-64">
+        <div className="mt-4 flex justify-center">
+          <div
+            className="relative w-64 h-64 rounded-full overflow-hidden border border-gray-300"
+            onClick={() => setZoomedImage(capturedImage)}
+          >
             <Image
               src={capturedImage}
               alt="Captured Face"
@@ -121,7 +198,7 @@ const VerificationForm: React.FC<VerificationFormProps> = ({ onSubmit }) => {
       {/* Verify Button - Forced to Match Email/Password Width */}
       <div className="w-full mt-4">
         <button
-          onClick={() => onSubmit("pending")}
+          onClick={handleSubmit}
           disabled={images.length === 0 || !capturedImage}
           className={`py-2 w-full rounded-lg focus:outline-none text-lg ${
             images.length === 0 || !capturedImage
@@ -129,9 +206,41 @@ const VerificationForm: React.FC<VerificationFormProps> = ({ onSubmit }) => {
               : "bg-green-500 hover:bg-green-600 text-white"
           }`}
         >
-          Verify
+          {loading ? (
+            <span className="flex justify-center items-center">
+              <svg
+                className="animate-spin h-5 w-5 mr-2 border-t-2 border-white rounded-full"
+                viewBox="0 0 24 24"
+              ></svg>
+              Uploading...
+            </span>
+          ) : (
+            "Verify"
+          )}
         </button>
       </div>
+      {/* Zoom Modal */}
+      {zoomedImage && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50"
+          onClick={() => setZoomedImage(null)}
+        >
+          <button
+            className="absolute top-2 right-2 bg-gray-300 hover:bg-gray-400 text-black rounded-full p-2"
+            onClick={() => setZoomedImage(null)}
+          >
+            <XMarkIcon className="w-6 h-6" />
+          </button>
+          <div className="relative w-[90vw] h-[70vh]">
+            <Image
+              src={zoomedImage}
+              alt="Zoomed Image"
+              layout="fill"
+              objectFit="contain"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

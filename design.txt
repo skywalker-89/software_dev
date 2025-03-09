@@ -2,3 +2,306 @@ primary color = #7ED321
 secondary color = #F5F5F5
 accent color = #FFA500
 error color = #FF5C5C
+
+
+import React, { useRef, useEffect, useState } from "react";
+import Image from "next/image";
+import {
+  ArrowLeftIcon,
+  PaperClipIcon,
+  CheckBadgeIcon,
+  PhoneIcon,
+  PaperAirplaneIcon,
+  QrCodeIcon,
+} from "@heroicons/react/24/outline";
+import { io } from "socket.io-client";
+
+const socket = io("http://localhost:1111"); // Adjust based on backend
+
+interface ChatProps {
+  chatId: string | null;
+  userId: string;
+  chats: {
+    id: string;
+    chatTitle: string;
+    participantsNUMIDs: string[];
+    name: string;
+    messages: {
+      sender: string;
+      content: string;
+      avatar: string;
+      timestamp: string;
+      reactions?: string[];
+      isMine?: boolean;
+      isRead?: boolean;
+    }[];
+  }[];
+  onBack: () => void;
+}
+
+const Chat: React.FC<ChatProps> = ({ chatId, chats, onBack, userId }) => {
+  const chat = chats.find((c) => c.id === chatId);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState(
+    chat?.messages.map((msg) => ({
+      ...msg,
+      isMine: msg.sender === String(userId), // Ensure sent messages appear on the right
+      time: msg.timestamp
+        ? new Date(msg.timestamp).toLocaleString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          }) // ✅ Convert stored timestamp correctly
+        : new Date().toLocaleString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          }), // Default if missing
+      isRead: msg.isRead ?? false, // ✅ Ensure `isRead` exists with a default value
+    })) || []
+  );
+
+  // Identify receiver ID
+  const receiverId = chat
+    ? chat.participantsNUMIDs.find((id) => id !== String(userId)) || ""
+    : "";
+
+  // Join chat room
+  useEffect(() => {
+    if (chatId) {
+      socket.emit("join-room", chatId);
+
+      // ✅ Mark messages as read when chat is opened
+      fetch("http://localhost:1111/chat/mark-messages-read", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chatId, userId }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.chat) {
+            setMessages(
+              data.chat.messages.map((msg) => ({
+                ...msg,
+                isMine: msg.sender === String(userId),
+                time: new Date(msg.timestamp).toLocaleString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: true,
+                }),
+                isRead: msg.isRead ?? false, // ✅ Ensure messages are marked as read
+              }))
+            );
+          }
+        })
+        .catch((err) => console.error("Error marking messages as read:", err));
+    }
+  }, [chatId]);
+
+  // Receive messages in real-time
+  useEffect(() => {
+    socket.on("receive-message", (newMessage) => {
+      console.log("This is the new message sender ID", newMessage.sender);
+      console.log("This is the userId", userId);
+      if (String(newMessage.sender) === String(userId)) {
+        return; // ✅ Ignore the message if it's from the current user
+      }
+
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        {
+          sender: newMessage.senderId,
+          content: newMessage.content,
+          avatar: "",
+          time: new Date(newMessage.timestamp || Date.now()).toLocaleString(
+            [],
+            { hour: "2-digit", minute: "2-digit", hour12: true }
+          ), // ✅ Show correct time
+          isMine: false, // ✅ Always false since it's from the other user
+          timestamp: newMessage.timestamp || new Date().toISOString(), // ✅ Ensure timestamp exists
+          isRead: false, // ✅ Default to false
+        },
+      ]);
+    });
+
+    return () => {
+      socket.off("receive-message");
+    };
+  }, [chatId, userId]);
+
+  // Send message function
+  const sendMessage = () => {
+    if (message.trim()) {
+      const timestamp = new Date().toISOString(); // ✅ Store timestamp as ISO string
+
+      const newMessage = {
+        chatId,
+        senderId: userId,
+        receiverId,
+        content: message,
+        timestamp, // ✅ Send correct timestamp
+      };
+
+      console.log("This is the sender", userId);
+      console.log("This is the receiver", receiverId);
+
+      // Emit the message through the socket
+      socket.emit("send-message", newMessage);
+
+      // Update UI immediately
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        {
+          sender: userId,
+          content: message,
+          avatar: "", // Replace with real avatar if needed
+          time: new Date(timestamp).toLocaleString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          }), // ✅ Show correct message time
+          timestamp, // ✅ Include timestamp
+          isMine: true, // ✅ Ensure sent messages appear on the right side
+          isRead: false, // ✅ Default to false
+        },
+      ]);
+
+      setMessage("");
+    }
+  };
+
+  // Auto-scroll when messages update
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  if (!chat) {
+    return (
+      <div className="flex-1 h-full flex items-center justify-center bg-white">
+        <p className="text-gray-500">Select a chat to view the conversation</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex-1 h-full bg-gray-100 flex flex-col">
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b bg-white shadow-md sticky top-0 z-10">
+        <button
+          onClick={onBack}
+          className="md:hidden flex items-center p-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition duration-200 shadow-sm"
+        >
+          <ArrowLeftIcon className="h-5 w-5 text-gray-700" />
+        </button>
+        <h2 className="text-lg font-semibold ml-2 text-gray-800">
+          {chat.chatTitle || "Untitled Chat"}
+        </h2>
+        <div className="flex items-center space-x-3">
+          <button className="p-2 rounded-full bg-gray-200 hover:bg-gray-300">
+            <PhoneIcon className="h-5 w-5 text-gray-700" />
+          </button>
+          <button className="p-2 rounded-full bg-gray-200 hover:bg-gray-300">
+            <CheckBadgeIcon className="h-5 w-5 text-gray-700" />
+          </button>
+          <button className="p-2 rounded-full bg-gray-200 hover:bg-gray-300">
+            <QrCodeIcon className="h-5 w-5 text-gray-700" />
+          </button>
+        </div>
+      </div>
+
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.map((msg, index) => {
+          const currentMessageDate = new Date(
+            msg.timestamp
+          ).toLocaleDateString();
+          const previousMessageDate =
+            index > 0
+              ? new Date(messages[index - 1].timestamp).toLocaleDateString()
+              : null;
+
+          return (
+            <React.Fragment key={index}>
+              {/* Display date header if the date is different from the previous message */}
+              {currentMessageDate !== previousMessageDate && (
+                <div className="text-center text-xs text-gray-500 my-2">
+                  {currentMessageDate}
+                </div>
+              )}
+
+              <div
+                className={`flex items-end space-x-3 ${
+                  msg.isMine ? "justify-end" : "justify-start"
+                }`}
+              >
+                {!msg.isMine && msg.avatar && (
+                  <Image
+                    src={msg.avatar}
+                    alt="User avatar"
+                    width={35}
+                    height={35}
+                    className="rounded-full object-cover"
+                  />
+                )}
+                <div
+                  className={`max-w-xs md:max-w-sm p-3 rounded-xl shadow-sm ${
+                    msg.isMine
+                      ? "bg-blue-500 text-white rounded-tr-none"
+                      : "bg-gray-200 text-gray-900 rounded-tl-none"
+                  }`}
+                >
+                  <p className="text-sm">{msg.content}</p>
+                  <div className="text-xs opacity-75">
+                    {new Date(msg.timestamp).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: true,
+                    })}
+                  </div>
+                </div>
+              </div>
+            </React.Fragment>
+          );
+        })}
+        {/* ✅ Show "Seen" text below the last message if it is read */}
+        {messages.length > 0 &&
+          messages[messages.length - 1].isMine &&
+          messages[messages.length - 1].isRead && (
+            <div className="text-xs text-gray-500 text-right mt-1">Seen</div>
+          )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input Box */}
+      <div className="sticky bottom-0 bg-white p-3 border-t shadow-md flex items-center space-x-3">
+        <button className="p-2 bg-gray-200 rounded-lg hover:bg-gray-300">
+          <PaperClipIcon className="h-6 w-6 text-gray-600" />
+        </button>
+        <input
+          type="text"
+          className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Type your message..."
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") sendMessage();
+          }}
+        />
+        <button
+          className={`p-3 rounded-lg transition ${
+            message.trim()
+              ? "bg-blue-500 text-white hover:bg-blue-600"
+              : "bg-gray-300 text-gray-500 cursor-not-allowed"
+          }`}
+          disabled={!message.trim()}
+          onClick={sendMessage}
+        >
+          <PaperAirplaneIcon className="h-5 w-5" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default Chat;

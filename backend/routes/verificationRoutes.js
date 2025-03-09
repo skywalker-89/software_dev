@@ -6,7 +6,10 @@ const upload = require("../config/multerConfig"); // Multer for image upload
 // 🟢 Submit Verification (Upload ID & Face Picture)
 router.post(
   "/submit",
-  upload.array("images", 2),
+  upload.fields([
+    { name: "id_card", maxCount: 1 },
+    { name: "face_picture", maxCount: 1 },
+  ]),
   verificationController.verifyUser
 );
 

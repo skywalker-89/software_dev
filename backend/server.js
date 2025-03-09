@@ -60,11 +60,14 @@ app.get("/", (req, res) => {
   res.send("Server is running...");
 });
 
+// Initialize WebSocket after starting the server
+const io = initializeSocket(server);
+
+// Export the io instance to use it elsewhere in the app
+module.exports = { io };
+
 // Port configuration
 const PORT = process.env.PORT || 1111;
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+server.listen(PORT, "::", () => {
+  console.log(`✅ Server running on http://localhost:${PORT} (IPv4 & IPv6)`);
 });
-
-// ✅ Initialize WebSocket after starting the server
-initializeSocket(server);

@@ -16,4 +16,7 @@ router.post(
 // 📧 Route for confirming time and place
 router.get("/confirm-schedule", emailController.confirmSchedule);
 
+// 📧 Route for confirming time and place
+router.get("/re-schedule", emailController.ReSchedule);
+
 module.exports = router;

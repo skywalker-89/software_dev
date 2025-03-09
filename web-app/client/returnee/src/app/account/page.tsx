@@ -19,11 +19,10 @@ const SettingList: React.FC<SettingListProps> = ({
   setActiveComponent,
 }) => {
   const settings = [
-    { name: "Account Setting", component: "AccountSetting" },
+    { name: "Account Verification", component: "AccountSetting" },
     { name: "Items History", component: "ItemsHistory" },
     { name: "Privacy & Policy", component: "PrivacyPolicy" },
     { name: "Logout", component: "Logout" },
-    { name: "Delete Account", component: "DeleteAccount" },
   ];
 
   const [user, setUser] = useState({
@@ -126,9 +125,7 @@ const SettingList: React.FC<SettingListProps> = ({
         <div
           key={index}
           className={`p-3 border-b border-gray-300 cursor-pointer hover:bg-gray-100 ${
-            item.name === "Logout" || item.name === "Delete Account"
-              ? "text-red-500"
-              : ""
+            item.name === "Logout" ? "text-red-500" : ""
           }`}
           onClick={() => {
             setActiveComponent(item.component);

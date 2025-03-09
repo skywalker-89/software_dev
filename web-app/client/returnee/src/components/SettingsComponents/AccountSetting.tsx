@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import PendingVerification from "../decorations/PendingVerification";
 import VerifiedStatus from "../decorations/VerifiedStatus";
 import UnclearPhoto from "../decorations/UnclearPhoto";
@@ -20,8 +20,6 @@ interface AccountSettingProps {
 }
 
 const AccountSetting: React.FC<AccountSettingProps> = ({ user, setUser }) => {
-  const [password, setPassword] = useState("");
-
   // ✅ Handle verification status update
   const handleVerificationStatusChange = (
     status: "pending" | "unclear" | "verified" | "not_verified"
@@ -35,34 +33,7 @@ const AccountSetting: React.FC<AccountSettingProps> = ({ user, setUser }) => {
 
   return (
     <div className="p-6 flex flex-col items-center">
-      <h1 className="text-2xl font-bold mb-4">Account Settings</h1>
-
-      {/* User Email Field */}
-      <div className="mb-4 w-full">
-        <label className="block text-sm font-medium mb-2">Email</label>
-        <input
-          type="email"
-          value={user?.email || ""} // ✅ Use optional chaining and default to an empty string
-          onChange={(e) =>
-            setUser((prevUser) => ({
-              ...prevUser,
-              email: e.target.value,
-            }))
-          }
-          className="w-full p-2 border rounded-lg"
-        />
-      </div>
-
-      {/* User Password Field */}
-      <div className="mb-4 w-full">
-        <label className="block text-sm font-medium mb-2">New Password</label>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full p-2 border rounded-lg"
-        />
-      </div>
+      <h1 className="text-2xl font-bold mb-4">Account Verification</h1>
 
       {/* 🔹 Verification Status Handling */}
       {user.verified === "verified" && <VerifiedStatus />}

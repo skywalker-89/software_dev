@@ -129,3 +129,51 @@ create another mechanism if a user is not verified they cant send the email to t
 > set up socket.io(pub/sub) and for live chat in the front end save chat logs in mongoDB the messages that were sent in live will be stored
 in mogoDB as read message but the non live chat will be handle as (queue message)
 
+>>> adjust the socket.io to just send the messages via the participantsNUMIDs
+
+>>> save the messages into the MONGODB and adjust the frontend recieving and sending layouts.;
+
+>>>> fix the double logged in.
+
+>> make read and unread status for the message too <<<
+    >>> add the configure the chatschema 
+        >>> add seen and unseen to message 
+        >>> put red dot there at the right side of the chat in chatList with th number of unseen message (max 99+)
+        >>> if the chat is called or the message is read in live the status of those messages will be seen 
+        >>> there will be a word down there for showing people that the chat is seen 
+
+
+>>> make the chat able to send the pictures
+pic -> cloudinary -> url(cloudinary) -> display it in the chat <<<<
+
+fix the image sending make sure i can send multiple images at a time in frontend
+    >>> if i selected a pic i should be able to click the send button (done)
+    >>> fix the image layout there in the chat (done)
+    >>> fix the review pictures there make it more beautiful (done)
+    >>> fix the read and unread status there in the chat and chatList
+    >>> loading animation while uploading images too (done)
+    >>> click into the image tooo (done)
+
+tmr 07/03/2025 
+    >>>>> enable reschudle in the chat. (done)
+    >>>>> generate qr code by user info and item id.11111(done)
+    todo(now) 08/03/2025
+        >>>> sender_id and item_id matched == pass (done)
+        >>>> make match in the backend if the item is matched send the signal to the backend to change the status (done)
+            **** create backend function and route to handle this. (done)
+            >>>> change the status and the time claim at there (done)
+
+    >>>>> the item there will be saved as the item history of the poster
+    >>>>> delete the item lost/found post if the final qr code is scanned (done)
+
+
+    
+
+sunday 09/03/2025 
+    >>>> every url must log in first 
+    >>>> **** 5 kms around the map items and filters
+
+pass in chatId search for participantsNUMIDs and fetch their everyinfo of the user and chatTitle to make a gmail confirmation
+
+***** generate the qr code in gmail and enable qr code scan ******
+

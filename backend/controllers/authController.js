@@ -237,3 +237,27 @@ exports.getUserData = async (req, res) => {
     res.status(500).json({ message: "Error fetching user data", error });
   }
 };
+
+// GET USER DATA BY ID
+exports.getUserDataById = async (req, res) => {
+  const { id } = req.params; // Extract user ID from request parameters
+  console.log(id);
+
+  try {
+    const result = await pool.query(
+      "SELECT * FROM public.users WHERE id = $1",
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const user = result.rows[0];
+
+    res.json({ user });
+  } catch (error) {
+    console.error("Error fetching user data by ID:", error);
+    res.status(500).json({ message: "Error fetching user data by ID", error });
+  }
+};

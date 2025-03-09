@@ -38,6 +38,9 @@ router.get(
 // 🔹 GET User Data Route (NEW)
 router.get("/me", authMiddleware.protect, authController.getUserData);
 
+// 🔹 GET User Data by ID Route (NEW)
+router.get("/user/:id", authController.getUserDataById);
+
 // 🟦 Facebook Auth Callback
 router.get(
   "/facebook/callback",
