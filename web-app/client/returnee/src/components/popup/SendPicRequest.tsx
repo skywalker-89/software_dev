@@ -13,6 +13,7 @@ interface SendPicRequestProps {
   user_id: string; // ✅ Add user_id to props
   poster_id: string; // ✅ Add poster_id to props
   item_id: string; // ✅ Add item_id to props
+  title: string;
 }
 
 const SendPicRequest: React.FC<SendPicRequestProps> = ({
@@ -25,6 +26,7 @@ const SendPicRequest: React.FC<SendPicRequestProps> = ({
   user_id, // ✅ Destructure user_id from props
   poster_id, // ✅ Destructure poster_id from props
   item_id, // ✅ Destructure item_id from props
+  title,
 }) => {
   const [location, setLocation] = useState("");
   const [dateTime, setDateTime] = useState("");
@@ -73,11 +75,14 @@ const SendPicRequest: React.FC<SendPicRequestProps> = ({
       formData.append("type", "return");
       formData.append("user_id", user_id);
       formData.append("poster_id", poster_id);
-      formData.append("item_id", item_id);
+      formData.append("id", item_id);
+      formData.append("title", title);
 
       images.forEach((image) => formData.append("images", image));
 
       console.log("📧 Sending request via parent function with images");
+
+      console.log(formData);
       await onSendRequest(formData, "return");
 
       onClose();
@@ -146,7 +151,7 @@ const SendPicRequest: React.FC<SendPicRequestProps> = ({
         </label>
 
         {/* 🖼 Image Preview */}
-        <div className="flex flex-wrap gap-3 mb-6">
+        <div className="flex flex-wrap gap-3 mb-6 mt-6">
           {images.map((image, index) => (
             <div key={index} className="relative">
               <img

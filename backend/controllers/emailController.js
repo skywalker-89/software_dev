@@ -79,7 +79,8 @@ exports.sendEmailPic = async (req, res) => {
       title,
     } = req.body;
 
-    console.log(req.body);
+    console.log("This is the the", title);
+    console.log("This is the the", id);
 
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ message: "No images uploaded" });

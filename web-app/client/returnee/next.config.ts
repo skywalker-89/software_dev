@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
       "res.cloudinary.com",
     ], // Add the domain of your image source
   },
+  experimental: {},
 };
 
 export default nextConfig;

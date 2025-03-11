@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const pool = require("../config/dbConfig"); // Import the pool
+const cloudinary = require("../config/cloudinaryConfig");
 
 // Register
 exports.register = async (req, res) => {
@@ -78,6 +79,7 @@ exports.login = async (req, res) => {
         last_name: user.last_name,
         phone_number: user.phone_number,
         verified: user.verified, // ✅ Include verified status
+        profile_picture: user.profile_picture,
       },
     });
   } catch (error) {
@@ -221,7 +223,7 @@ exports.getUserData = async (req, res) => {
     const userId = req.user.id; // Extract user ID from token
 
     const result = await pool.query(
-      "SELECT id, email, first_name, last_name, phone_number, verified FROM public.users WHERE id = $1",
+      "SELECT id, email, first_name, last_name, phone_number, profile_picture, verified FROM public.users WHERE id = $1",
       [userId]
     );
 
@@ -259,5 +261,68 @@ exports.getUserDataById = async (req, res) => {
   } catch (error) {
     console.error("Error fetching user data by ID:", error);
     res.status(500).json({ message: "Error fetching user data by ID", error });
+  }
+};
+
+// 🔹 Upload Profile Picture
+exports.uploadProfilePicture = async (req, res) => {
+  const { id, firstName, lastName } = req.body;
+
+  try {
+    // Ensure an image file is provided
+    if (!req.file) {
+      return res.status(400).json({ message: "No image file provided" });
+    }
+
+    // Fetch current user data to check for an existing profile picture
+    const userQuery = await pool.query(
+      "SELECT profile_picture FROM public.users WHERE id = $1",
+      [id]
+    );
+
+    if (userQuery.rows.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const oldImageUrl = userQuery.rows[0].profile_picture;
+
+    // 🔹 Extract public_id from the old image URL and delete it if it exists
+    if (oldImageUrl) {
+      const oldImagePublicId = oldImageUrl.split("/").pop().split(".")[0]; // Extract public_id from URL
+
+      await cloudinary.uploader.destroy(`profilepicture/${oldImagePublicId}`);
+    }
+
+    // 🔹 Upload new image using `upload_stream()` instead of `upload()`
+    const uploadResult = await new Promise((resolve, reject) => {
+      cloudinary.uploader
+        .upload_stream(
+          {
+            folder: "profilepicture",
+            public_id: `${id}_${firstName}_${lastName}`, // Custom naming
+            resource_type: "image",
+            overwrite: true, // Overwrites the old image
+          },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result.secure_url);
+          }
+        )
+        .end(req.file.buffer); // 🔹 Correct way to send `buffer`
+    });
+
+    // 🔹 Update the profile picture URL in the database
+    await pool.query(
+      "UPDATE public.users SET profile_picture = $1 WHERE id = $2",
+      [uploadResult, id]
+    );
+
+    res.json({
+      message: `Profile picture updated successfully ${uploadResult}`,
+      profile_picture: uploadResult,
+    });
+  } catch (error) {
+    console.error("Error uploading profile picture:", error);
+    res.status(500).json({ message: "Error uploading profile picture" });
   }
 };

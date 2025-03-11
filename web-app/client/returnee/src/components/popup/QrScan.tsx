@@ -68,7 +68,7 @@ const QRScan: React.FC<QRScanProps> = ({ onClose, onScanSuccess }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-5 rounded-lg shadow-lg w-full max-w-lg relative">
+      <div className="bg-white p-5 rounded-lg shadow-lg w-full max-w-lg relative ml-5 mr-5">
         <button
           onClick={() => {
             stopScanner();

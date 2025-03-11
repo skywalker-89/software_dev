@@ -48,6 +48,7 @@ const Chat: React.FC<ChatProps> = ({ chatId, chats, onBack, userId }) => {
   const [modalImage, setModalImage] = useState<string | null>(null); // State for lightbox image
   const [isScheduleModalOpen, setIsScheduleRequestModalOpen] = useState(false);
   const [isQRScanOpen, setIsQRScanOpen] = useState(false);
+  const [profileModal, setProfileModal] = useState<string | null>(null); // Store profile image for modal
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [message, setMessage] = useState("");
@@ -110,6 +111,37 @@ const Chat: React.FC<ChatProps> = ({ chatId, chats, onBack, userId }) => {
   const receiverId = chat
     ? chat.participantsNUMIDs.find((id) => id !== String(userId)) || ""
     : "";
+
+  const [receiverUser, setReceiverUser] = useState({
+    first_name: "",
+    last_name: "",
+    profile_picture: "",
+  });
+
+  // Fetch receiver user data
+  useEffect(() => {
+    if (receiverId) {
+      const fetchReceiverUser = async () => {
+        try {
+          const response = await fetch(
+            `http://localhost:1111/auth/user/${receiverId}`
+          );
+
+          if (!response.ok) {
+            throw new Error("Failed to fetch receiver user data");
+          }
+
+          const data = await response.json();
+          console.log("This is the user data", data.user);
+          setReceiverUser(data.user); // ✅ Set receiver user data
+        } catch (error) {
+          console.error("Error fetching receiver user:", error);
+        }
+      };
+
+      fetchReceiverUser();
+    }
+  }, [receiverId]); // ✅ Runs when receiverId changes
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -302,9 +334,32 @@ const Chat: React.FC<ChatProps> = ({ chatId, chats, onBack, userId }) => {
         >
           <ArrowLeftIcon className="h-5 w-5 text-gray-700" />
         </button>
-        <h2 className="text-lg font-semibold ml-2 text-gray-800">
-          {chat.chatTitle || "Untitled Chat"}
-        </h2>
+        {/* Receiver Info */}
+        <div className="flex items-center space-x-3">
+          {/* Clickable Receiver Profile Picture */}
+          {receiverUser.profile_picture ? (
+            <button
+              onClick={() => setProfileModal(receiverUser.profile_picture)} // Open modal with image
+              className="focus:outline-none"
+            >
+              <Image
+                src={receiverUser.profile_picture}
+                alt="Receiver Profile"
+                width={40}
+                height={40}
+                className="w-10 h-10 rounded-full object-cover border border-gray-300 shadow-sm hover:scale-110 transition-transform"
+              />
+            </button>
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-gray-400"></div> // Placeholder if no profile picture
+          )}
+
+          <h2 className="text-lg font-semibold text-gray-800">
+            {receiverUser.first_name && receiverUser.last_name
+              ? `${receiverUser.first_name} ${receiverUser.last_name}`
+              : "Untitled Chat"}
+          </h2>
+        </div>
         <div className="flex items-center space-x-3">
           <button
             className="p-2 rounded-full bg-gray-200 hover:bg-gray-300"
@@ -320,6 +375,30 @@ const Chat: React.FC<ChatProps> = ({ chatId, chats, onBack, userId }) => {
           </button>
         </div>
       </div>
+
+      {/* ✅ Profile Picture Zoom Modal */}
+      {profileModal && (
+        <div
+          className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50"
+          onClick={() => setProfileModal(null)} // Close modal on click
+        >
+          <div className="relative max-w-3xl max-h-3xl p-4 bg-white rounded-lg">
+            <Image
+              src={profileModal}
+              alt="Profile Picture"
+              width={500}
+              height={500}
+              className="rounded-lg object-contain shadow-lg"
+            />
+            <button
+              onClick={() => setProfileModal(null)}
+              className="absolute top-4 right-4 bg-gray-800 text-white rounded-full p-2"
+            >
+              <XMarkIcon className="h-6 w-6" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">

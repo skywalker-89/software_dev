@@ -10,8 +10,9 @@ interface User {
   first_name: string;
   last_name: string;
   email: string;
-  profilePicture: string;
+  profile_picture: string;
   verified: string;
+  id: string;
 }
 
 interface AccountSettingProps {

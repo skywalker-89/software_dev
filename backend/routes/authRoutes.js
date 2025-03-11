@@ -3,6 +3,7 @@ const router = express.Router();
 const passport = require("passport");
 const authController = require("../controllers/authController");
 const authMiddleware = require("../middlewares/authMiddleware");
+const upload = require("../config/multerConfig"); // ✅ Import multer config
 
 // Register
 router.post("/register", authController.register);
@@ -46,6 +47,14 @@ router.get(
   "/facebook/callback",
   passport.authenticate("facebook", { failureRedirect: "/login" }),
   authController.facebookAuthCallback
+);
+
+// 🔹 Upload Profile Picture Route
+router.post(
+  "/upload-profile-picture",
+  authMiddleware.protect,
+  upload.single("image"), // Handle image upload
+  authController.uploadProfilePicture
 );
 
 module.exports = router;

@@ -29,8 +29,9 @@ const SettingList: React.FC<SettingListProps> = ({
     first_name: "",
     last_name: "",
     email: "",
-    profilePicture: "",
+    profile_picture: "",
     verified: "", // Add verificationStatus here
+    id: "",
   });
 
   useEffect(() => {
@@ -51,6 +52,7 @@ const SettingList: React.FC<SettingListProps> = ({
         }
 
         const data = await response.json();
+        console.log(data.user);
         setUser(data.user);
 
         // Save user data to local storage
@@ -63,22 +65,55 @@ const SettingList: React.FC<SettingListProps> = ({
     fetchUserData();
   }, []);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [isUploading, setIsUploading] = useState(false); // Track upload state
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const newProfilePicture = reader.result as string;
-        setUser((prevUser) => ({
-          ...prevUser,
-          profilePicture: newProfilePicture,
-        }));
-        localStorage.setItem(
-          "user",
-          JSON.stringify({ ...user, profilePicture: newProfilePicture })
-        );
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    const token = localStorage.getItem("token"); // Ensure token is included
+
+    const formData = new FormData();
+    formData.append("id", user.id); // Send user ID
+    formData.append("firstName", user.first_name);
+    formData.append("lastName", user.last_name);
+    formData.append("image", file); // Append the image file
+
+    setIsUploading(true); // ✅ Start Loading
+
+    try {
+      const response = await fetch(
+        "http://localhost:1111/auth/upload-profile-picture",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`, // Include JWT token
+          },
+          body: formData, // Send formData instead of JSON
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to upload image");
+      }
+
+      const data = await response.json();
+
+      // ✅ Update the state with the new profile picture URL
+      setUser((prevUser) => ({
+        ...prevUser,
+        profile_picture: data.profile_picture, // Update with new image URL
+      }));
+
+      // ✅ Update localStorage with new profile picture URL
+      localStorage.setItem(
+        "user",
+        JSON.stringify({ ...user, profile_picture: data.profile_picture })
+      );
+    } catch (error) {
+      console.error("Error uploading profile picture:", error);
+    } finally {
+      setIsUploading(false); // ✅ Stop Loading
     }
   };
 
@@ -87,9 +122,32 @@ const SettingList: React.FC<SettingListProps> = ({
       <div className="text-center mb-6 hidden md:block">
         {/* Profile Picture */}
         <div className="relative w-20 h-20 mx-auto rounded-full overflow-hidden group">
-          {user.profilePicture ? (
+          {isUploading ? (
+            <div className="w-full h-full flex items-center justify-center bg-gray-400 animate-pulse">
+              <svg
+                className="h-8 w-8 text-white animate-spin"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+            </div>
+          ) : user.profile_picture ? (
             <Image
-              src={user.profilePicture}
+              src={`${user.profile_picture}?t=${new Date().getTime()}`}
               alt="Profile"
               width={80}
               height={80}
@@ -98,13 +156,18 @@ const SettingList: React.FC<SettingListProps> = ({
           ) : (
             <div className="w-20 h-20 rounded-full bg-gray-400"></div>
           )}
-
-          {/* Hover Overlay */}
+          {/* Click Overlay (instead of hover for mobile) */}
           <label
-            className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+            className={`absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center transition-opacity cursor-pointer ${
+              isUploading
+                ? "cursor-not-allowed"
+                : "opacity-0 group-hover:opacity-100"
+            }`}
             htmlFor="fileInput"
           >
-            <p className="text-white text-sm font-medium">Edit</p>
+            <p className="text-white text-sm font-medium">
+              {isUploading ? "Uploading..." : "Edit"}
+            </p>
           </label>
           <input
             type="file"
@@ -112,6 +175,7 @@ const SettingList: React.FC<SettingListProps> = ({
             accept="image/*"
             className="hidden"
             onChange={handleFileChange}
+            disabled={isUploading} // ✅ Disable input while uploading
           />
         </div>
 
@@ -160,8 +224,9 @@ const AccountPage: React.FC = () => {
     first_name: "",
     last_name: "",
     email: "",
-    profilePicture: "",
+    profile_picture: "",
     verified: "", // Add verificationStatus here
+    id: "",
   });
 
   useEffect(() => {
@@ -194,23 +259,56 @@ const AccountPage: React.FC = () => {
     fetchUserData();
   }, []);
 
-  // ✅ Updated handleFileChange to maintain user state
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [isUploading, setIsUploading] = useState(false); // Track upload state
+  const [isClicked, setIsClicked] = useState(false);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const newProfilePicture = reader.result as string;
-        setUser((prevUser) => ({
-          ...prevUser,
-          profilePicture: newProfilePicture,
-        }));
-        localStorage.setItem(
-          "user",
-          JSON.stringify({ ...user, profilePicture: newProfilePicture })
-        );
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    const token = localStorage.getItem("token"); // Ensure token is included
+
+    const formData = new FormData();
+    formData.append("id", user.id); // Send user ID
+    formData.append("firstName", user.first_name);
+    formData.append("lastName", user.last_name);
+    formData.append("image", file); // Append the image file
+
+    try {
+      setIsUploading(true);
+      const response = await fetch(
+        "http://localhost:1111/auth/upload-profile-picture",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`, // Include JWT token
+          },
+          body: formData, // Send formData instead of JSON
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to upload image");
+      }
+
+      const data = await response.json();
+      console.log("Profile picture updated:", data);
+
+      // ✅ Update the state with the new profile picture URL
+      setUser((prevUser) => ({
+        ...prevUser,
+        profile_picture: data.profile_picture, // Update with new image URL
+      }));
+
+      // ✅ Update localStorage with new profile picture URL
+      localStorage.setItem(
+        "user",
+        JSON.stringify({ ...user, profile_picture: data.profile_picture })
+      );
+    } catch (error) {
+      console.error("Error uploading profile picture:", error);
+    } finally {
+      setIsUploading(false); // ✅ Stop Loading
     }
   };
 
@@ -227,26 +325,68 @@ const AccountPage: React.FC = () => {
       {/* 🔹 Mobile Profile Section */}
       <div className="p-4 md:hidden flex justify-between items-center bg-white border-b shadow">
         <div className="flex items-center space-x-4">
-          {/* 🔹 Profile Picture in Mobile Navbar */}
-          <label className="relative w-10 h-10 rounded-full bg-gray-400 overflow-hidden cursor-pointer">
-            {user.profilePicture ? (
+          {/* Profile Picture */}
+          <div
+            className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-300 group mx-auto"
+            onClick={() => {
+              setIsClicked(true); // ✅ Set clicked state
+              document.getElementById("fileInput")?.click();
+              setTimeout(() => setIsClicked(false), 200); // ✅ Reset after 200ms
+            }}
+          >
+            {isUploading ? (
+              <div className="w-full h-full flex items-center justify-center bg-gray-400 animate-pulse">
+                <svg
+                  className="animate-spin h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+              </div>
+            ) : user.profile_picture ? (
               <Image
-                src={user.profilePicture}
+                src={`${user.profile_picture}?t=${new Date().getTime()}`}
                 alt="Profile"
-                width={40}
-                height={40}
+                width={80}
+                height={80}
                 className="rounded-full object-cover w-full h-full"
               />
             ) : (
-              <div className="w-10 h-10 bg-gray-400 rounded-full"></div>
+              <div className="w-10 h-10 rounded-full bg-gray-400"></div>
             )}
+
+            {/* Clickable Overlay (Mobile Tap) */}
+            <label
+              className={`absolute inset-0 bg-black ${
+                isClicked ? "bg-opacity-50" : "bg-opacity-0"
+              } flex items-center justify-center transition-opacity cursor-pointer ${
+                isUploading ? "cursor-not-allowed" : ""
+              }`}
+              htmlFor="fileInput"
+            ></label>
             <input
               type="file"
-              className="hidden"
+              id="fileInput"
               accept="image/*"
+              className="hidden"
               onChange={handleFileChange}
+              disabled={isUploading} // ✅ Disable while uploading
             />
-          </label>
+          </div>
           <h4 className="text-lg font-semibold">
             {user.first_name} {user.last_name}
           </h4>

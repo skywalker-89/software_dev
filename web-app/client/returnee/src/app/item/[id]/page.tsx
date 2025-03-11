@@ -363,6 +363,7 @@ const ItemDetail = () => {
             user_id={user.id}
             poster_id={item.owner_id || ""}
             item_id={item.id || ""}
+            title={item.title || ""}
           />
         ) : (
           <SelectTimeAndPlace
