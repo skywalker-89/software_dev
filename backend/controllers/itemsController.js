@@ -391,3 +391,30 @@ exports.setClaimItem = async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
+
+// 🟢 Get All Items (Lost and Found, Any Status)
+exports.getAllItems = async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT 
+        id, title, status, description, last_seen_location, latitude, longitude, image_urls, created_at, owner_id as user_id, 'lost' as item_type
+      FROM lost_items
+      UNION ALL
+      SELECT 
+        id, title, status, description, found_location as last_seen_location, latitude, longitude, image_urls, created_at, founder_id as user_id, 'found' as item_type
+      FROM found_items
+      ORDER BY created_at DESC`
+    );
+
+    // Ensure image_urls is an array
+    const formattedItems = result.rows.map((item) => ({
+      ...item,
+      image_urls: Array.isArray(item.image_urls) ? item.image_urls : [],
+    }));
+
+    res.json(formattedItems);
+  } catch (error) {
+    console.error("Error getting all items:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+};

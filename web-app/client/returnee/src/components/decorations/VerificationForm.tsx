@@ -75,7 +75,7 @@ const VerificationForm: React.FC<VerificationFormProps> = ({ onSubmit }) => {
 
     try {
       const response = await fetch(
-        "http://localhost:1111/verification/submit",
+        `http://${process.env.id}:1111/verification/submit`,
         {
           method: "POST",
           body: formData,

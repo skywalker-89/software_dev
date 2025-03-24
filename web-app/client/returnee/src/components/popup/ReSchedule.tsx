@@ -41,7 +41,7 @@ const ReSchedule: React.FC<ReScheduleProps> = ({
         const participantData = await Promise.all(
           participantsNUMIDs.map(async (id) => {
             const response = await fetch(
-              `http://localhost:1111/auth/user/${id}`
+              `http://${process.env.id}:1111/auth/user/${id}`
             );
             const data = await response.json();
             if (response.ok) {
@@ -61,7 +61,7 @@ const ReSchedule: React.FC<ReScheduleProps> = ({
     const fetchItemData = async () => {
       try {
         const response = await fetch(
-          `http://localhost:1111/items/specified/${chatId}`
+          `http://${process.env.id}:1111/items/specified/${chatId}`
         );
         const data = await response.json();
         if (response.ok) {
@@ -105,7 +105,7 @@ const ReSchedule: React.FC<ReScheduleProps> = ({
 
       //   Make API request to send confirmation email
       const response = await fetch(
-        `http://localhost:1111/email/re-schedule?recipientEmail=${recipientEmail}&senderEmail=${senderEmail}&location=${location}&dateTime=${dateTime}&title=${title}&id=${chatId}&senderFirstName=${senderFirstName}&senderLastName=${senderLastName}&senderPhone=${senderPhone}&senderId=${senderId}`,
+        `http://${process.env.id}:1111/email/re-schedule?recipientEmail=${recipientEmail}&senderEmail=${senderEmail}&location=${location}&dateTime=${dateTime}&title=${title}&id=${chatId}&senderFirstName=${senderFirstName}&senderLastName=${senderLastName}&senderPhone=${senderPhone}&senderId=${senderId}`,
         {
           method: "GET", // You could also use POST if needed
         }

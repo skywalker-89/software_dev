@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 
 const GoogleAuthRedirect = () => {
   const router = useRouter();
@@ -12,12 +13,20 @@ const GoogleAuthRedirect = () => {
       const token = urlParams.get("token");
       const userData = urlParams.get("user");
 
+      // console.log(token, userData);
+
       if (token && userData) {
         const user = JSON.parse(decodeURIComponent(userData));
 
         // Store user & token in localStorage
         localStorage.setItem("token", token);
         localStorage.setItem("user", JSON.stringify(user));
+
+        Cookies.set("token", token, {
+          expires: 365,
+          path: "/",
+          sameSite: "lax", // Prevents cross-site request issues
+        });
 
         console.log("Saved User in localStorage:", user); // Debugging Log
 

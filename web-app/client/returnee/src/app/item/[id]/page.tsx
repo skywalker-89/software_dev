@@ -13,7 +13,7 @@ import VerifiedFirst from "../../../components/popup/VerifiedFirst";
 interface Item {
   id: string;
   title: string;
-  status: "lost" | "found";
+  status: "lost" | "found" | "claimed";
   description: string;
   lastSeen: string;
   time: string;
@@ -60,7 +60,9 @@ const ItemDetail = () => {
 
     const fetchItem = async () => {
       try {
-        const response = await fetch(`http://localhost:1111/items/${id}`);
+        const response = await fetch(
+          `http://${process.env.id}:1111/items/${id}`
+        );
         if (!response.ok) throw new Error("Failed to fetch item");
         const data = await response.json();
 
@@ -85,7 +87,7 @@ const ItemDetail = () => {
         setItem({
           id: String(data.id),
           title: data.title || "Unknown Item",
-          status: data.status === "claimed" ? "found" : data.status,
+          status: data.status,
           description: data.description,
           lastSeen:
             data.last_seen_location ||
@@ -108,6 +110,12 @@ const ItemDetail = () => {
 
     fetchItem();
   }, [id]);
+
+  useEffect(() => {
+    if (item) {
+      console.log(item);
+    }
+  }, [item]);
 
   if (!item) return <p className="text-center text-gray-500">Loading...</p>;
 
@@ -156,7 +164,7 @@ const ItemDetail = () => {
 
     try {
       console.log(item.posterEmail);
-      await fetch("http://localhost:1111/email/send-email", {
+      await fetch(`http://${process.env.id}:1111/email/send-email`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -183,7 +191,7 @@ const ItemDetail = () => {
 
   const handleSendPicRequest = async (formData: FormData) => {
     try {
-      await fetch("http://localhost:1111/email/send-email-pic", {
+      await fetch(`http://${process.env.id}:1111/email/send-email-pic`, {
         method: "POST",
         body: formData,
       });
@@ -277,15 +285,24 @@ const ItemDetail = () => {
               <ItemMapSection
                 latitude={item.latitude}
                 longitude={item.longitude}
-                description={item.description}
                 imageUrl={item.images?.[0] || ""}
-                status={item.status} // ✅ Pass the status dynamically
+                id={item.id}
+                title={item.title}
+                status={item.status}
               />
             </div>
           </div>
 
           {/* 🟢 Conditional Button (Request Claim or Return Item) */}
-          {item.status === "lost" ? (
+          {item.status === "claimed" ? (
+            // Claimed Item: Display disabled button with yellow background
+            <button
+              className="w-full bg-yellow-600 text-white py-3 rounded-lg text-lg font-bold cursor-not-allowed opacity-70"
+              disabled
+            >
+              Claimed
+            </button>
+          ) : item.status === "lost" ? (
             <button
               className="w-full bg-blue-600 text-white py-3 rounded-lg text-lg font-bold hover:bg-blue-700 transition"
               onClick={returnItem} // 🔥 Calls requestClaim function

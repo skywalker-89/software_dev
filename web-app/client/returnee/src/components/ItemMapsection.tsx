@@ -1,9 +1,10 @@
 "use client";
 
 import React from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import CustomPopupItem from "./decorations/CustomPopupItem";
 
 // ✅ Fix Leaflet marker issue
 delete L.Icon.Default.prototype._getIconUrl;
@@ -35,16 +36,18 @@ const greenIcon = new L.Icon({
 interface ItemMapSectionProps {
   latitude: number;
   longitude: number;
-  description: string;
   imageUrl?: string;
-  status: "lost" | "found"; // ✅ New status prop
+  id: string;
+  title: string;
+  status: string;
 }
 
 const ItemMapSection: React.FC<ItemMapSectionProps> = ({
   latitude,
   longitude,
-  description,
   imageUrl,
+  id,
+  title,
   status,
 }) => {
   // ✅ Select the marker color based on status
@@ -64,19 +67,9 @@ const ItemMapSection: React.FC<ItemMapSectionProps> = ({
 
         {/* ✅ Mark the item's location */}
         <Marker position={[latitude, longitude]} icon={itemIcon}>
-          <Popup>
-            <strong>
-              {status === "lost" ? "Lost Item Location" : "Found Item Location"}
-            </strong>
-            <p>{description}</p>
-            {imageUrl && (
-              <img
-                src={imageUrl}
-                alt="Item"
-                className="w-32 h-32 rounded-md mt-2"
-              />
-            )}
-          </Popup>
+          <CustomPopupItem
+            item={{ id, title, image_urls: imageUrl ? [imageUrl] : [] }}
+          />
         </Marker>
       </MapContainer>
     </div>

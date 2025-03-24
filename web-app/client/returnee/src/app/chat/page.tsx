@@ -70,7 +70,7 @@ const ChatPage = () => {
       try {
         // 🔹 Fetch chats where `chatKey` contains the user's numeric ID
         const response = await fetch(
-          `http://localhost:1111/chat/chats/${user.id}`
+          `http://${process.env.id}:1111/chat/chats/${user.id}`
         );
         if (!response.ok) throw new Error("Failed to fetch chats");
 
@@ -128,8 +128,9 @@ const ChatPage = () => {
 
   return (
     <div className="flex flex-col h-screen bg-gray-100">
+      {/* Add fixed positioning */}
       <Navbar />
-      <div className="flex-1 h-full flex overflow-hidden">
+      <div className="flex-1 h-full flex overflow-hidden ">
         {/* Chat List should take up 1/3 width on desktop, full width on mobile */}
         <div
           className={`${

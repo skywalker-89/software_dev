@@ -14,9 +14,9 @@ L.Icon.Default.mergeOptions({
 });
 
 // ✅ Custom Red Marker Icon
-const redIcon = new L.Icon({
+const blueIcon = new L.Icon({
   iconUrl:
-    "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
+    "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png",
   shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
   iconSize: [25, 41],
   iconAnchor: [12, 41],
@@ -39,7 +39,7 @@ const LocationMarker = ({
     },
   });
 
-  return position ? <Marker position={position} icon={redIcon} /> : null;
+  return position ? <Marker position={position} icon={blueIcon} /> : null;
 };
 
 // ✅ Interface for passing selected location to parent component

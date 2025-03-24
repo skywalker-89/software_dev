@@ -45,7 +45,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
         {/* Previous Image Button */}
         <button
           onClick={goToPreviousImage}
-          className="absolute left-0.5 z-10 p-2 bg-gray-800 text-white rounded-full"
+          className="absolute left-0.5 z-10 p-2 bg-gray-800 text-white rounded-full opacity-75 hover:opacity-100 transition-opacity duration-300"
         >
           <ChevronLeftIcon className="h-4 w-4" />
         </button>
@@ -69,7 +69,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
         {/* Next Image Button */}
         <button
           onClick={goToNextImage}
-          className="absolute right-0.5 z-10 p-2 bg-gray-800 text-white rounded-full"
+          className="absolute right-0.5 z-10 p-2 bg-gray-800 text-white rounded-full opacity-75 hover:opacity-100 transition-opacity duration-300"
         >
           <ChevronRightIcon className="h-4 w-4" />
         </button>

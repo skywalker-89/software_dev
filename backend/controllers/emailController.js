@@ -19,7 +19,9 @@ exports.sendEmail = async (req, res) => {
 
     console.log(req.body);
 
-    let confirmLink = `http://localhost:1111/email/confirm-schedule?recipientEmail=${encodeURIComponent(
+    let confirmLink = `http://${
+      process.env.ID
+    }:1111/email/confirm-schedule?recipientEmail=${encodeURIComponent(
       recipientEmail
     )}&senderEmail=${encodeURIComponent(
       senderEmail
@@ -27,7 +29,9 @@ exports.sendEmail = async (req, res) => {
       dateTime
     )}&title=${encodeURIComponent(title)}&id=${encodeURIComponent(id)}`;
 
-    let chatLink = `http://localhost:1111/chat/create-room?user_id=${encodeURIComponent(
+    let chatLink = `http://${
+      process.env.ID
+    }:1111/chat/create-room?user_id=${encodeURIComponent(
       user_id
     )}&poster_id=${encodeURIComponent(poster_id)}&id=${encodeURIComponent(
       id
@@ -39,7 +43,7 @@ exports.sendEmail = async (req, res) => {
     // HTML version with chat link button
     let htmlMessage = `
       <p>Hello,</p>
-      <p>${firstName} ${lastName} wants to claim <a href="http://localhost:3000/item/${id}">${title}</a></p>
+      <p>${firstName} ${lastName} wants to claim <a href="http://${process.env.ID}:3000/item/${id}">${title}</a></p>
       <p><strong>Pickup Details:</strong><br>
       Location: ${location}<br>
       Time: ${dateTime}</p>
@@ -91,7 +95,9 @@ exports.sendEmailPic = async (req, res) => {
       content: file.buffer,
     }));
 
-    let confirmLink = `http://localhost:1111/email/confirm-schedule?recipientEmail=${encodeURIComponent(
+    let confirmLink = `http://${
+      process.env.ID
+    }:1111/email/confirm-schedule?recipientEmail=${encodeURIComponent(
       recipientEmail
     )}&senderEmail=${encodeURIComponent(
       senderEmail
@@ -99,7 +105,9 @@ exports.sendEmailPic = async (req, res) => {
       dateTime
     )}&title=${encodeURIComponent(title)}&id=${encodeURIComponent(id)}`;
 
-    let chatLink = `http://localhost:1111/chat/create-room?user_id=${encodeURIComponent(
+    let chatLink = `http://${
+      process.env.ID
+    }:1111/chat/create-room?user_id=${encodeURIComponent(
       user_id
     )}&poster_id=${encodeURIComponent(poster_id)}&id=${encodeURIComponent(
       id
@@ -111,7 +119,7 @@ exports.sendEmailPic = async (req, res) => {
     // HTML version with chat link button
     let htmlMessage = `
       <p>Hello,</p>
-      <p>${firstName} ${lastName} wants to return your <a href="http://localhost:3000/item/${id}">${title}</a></p>
+      <p>${firstName} ${lastName} wants to return your <a href="http://${process.env.ID}:3000/item/${id}">${title}</a></p>
       <p><strong>Pickup Details:</strong><br>
       Location: ${location}<br>
       Time: ${dateTime}</p>
@@ -200,7 +208,7 @@ exports.ReSchedule = async (req, res) => {
       // Embed the QR code image as a base64 data URL in the email HTML
       let htmlMessage = `
         <p>Hello,</p>
-        <p>The time and place for the <a href="http://localhost:3000/item/${id}">${title}</a> pickup have been <strong>confirmed</strong>.</p>
+        <p>The time and place for the <a href="http://${process.env.ID}:3000/item/${id}">${title}</a> pickup have been <strong>confirmed</strong>.</p>
         <p><strong>Scheduled Details:</strong><br>
         Location: ${location}<br>
         Time: ${dateTime}</p>
@@ -210,7 +218,7 @@ exports.ReSchedule = async (req, res) => {
 
       let htmlMessageQR = `
         <p>Hello,</p>
-        <p>The time and place for the <a href="http://localhost:3000/item/${id}">${title}</a> pickup have been <strong>confirmed</strong>.</p>
+        <p>The time and place for the <a href="http://${process.env.ID}:3000/item/${id}">${title}</a> pickup have been <strong>confirmed</strong>.</p>
         <p><strong>Scheduled Details:</strong><br>
         Location: ${location}<br>
         Time: ${dateTime}</p>
@@ -276,7 +284,7 @@ exports.confirmSchedule = async (req, res) => {
 
     let htmlMessage = `
       <p>Hello,</p>
-      <p>The time and place for the <a href="http://localhost:3000/item/${id}">${title}</a> pickup have been <strong>confirmed</strong>.</p>
+      <p>The time and place for the <a href="http://${process.env.ID}:3000/item/${id}">${title}</a> pickup have been <strong>confirmed</strong>.</p>
       <p><strong>Scheduled Details:</strong><br>
       Location: ${location}<br>
       Time: ${dateTime}</p>
@@ -290,7 +298,7 @@ exports.confirmSchedule = async (req, res) => {
     await sendEmail(recipientEmail, subject, message, htmlMessage);
 
     // ✅ Redirect to /gmailConfirm after processing
-    res.redirect(302, "http://localhost:3000/gmailConfirm");
+    res.redirect(302, `http://${process.env.ID}:3000/gmailConfirm`);
   } catch (error) {
     console.error("❌ Error sending confirmation emails:", error);
     res.status(500).send("❌ Failed to send confirmation emails");

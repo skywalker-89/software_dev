@@ -6,6 +6,7 @@ import { FaFacebook } from "react-icons/fa";
 import Image from "next/image";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 
 const LoginPage: React.FC = () => {
   const [emailOrPhone, setEmailOrPhone] = useState("");
@@ -17,16 +18,25 @@ const LoginPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:1111/auth/login", {
-        emailOrPhone,
-        password,
-      });
+      const response = await axios.post(
+        `http://${process.env.id}:1111/auth/login`,
+        {
+          emailOrPhone,
+          password,
+        }
+      );
 
       console.log("Login successful", response.data);
 
       // Store token and user info
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("user", JSON.stringify(response.data.user));
+      // ✅ Store token in cookies instead of LocalStorage
+      Cookies.set("token", response.data.token, {
+        expires: 365,
+        path: "/",
+        sameSite: "lax", // Prevents cross-site request issues
+      });
       // const user = response.data.user;
       console.log("user", response.data.user);
       // console.log("First Name:", user.first_name);
@@ -47,12 +57,12 @@ const LoginPage: React.FC = () => {
 
   // 🔹 Google Login Function
   const handleGoogleLogin = () => {
-    window.location.href = "http://localhost:1111/auth/google"; // Redirect to backend Google OAuth
+    window.location.href = `http://${process.env.id}:1111/auth/google`; // Redirect to backend Google OAuth
   };
 
   // 🔹 Facebook Login Function
   const handleFacebookLogin = () => {
-    window.location.href = "http://localhost:1111/auth/facebook"; // Redirect to backend Facebook OAuth
+    window.location.href = `http://${process.env.id}:1111/auth/facebook`; // Redirect to backend Facebook OAuth
   };
 
   return (
@@ -146,7 +156,7 @@ const LoginPage: React.FC = () => {
       {/* Right Side - Image Section */}
       <div className="hidden md:flex w-1/2 relative">
         <Image
-          src="/assets/loginPagePic4.jpg"
+          src="/loginPagePic4.jpg"
           alt="Login Page Image"
           fill
           style={{ objectFit: "cover" }}

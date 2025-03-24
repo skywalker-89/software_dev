@@ -1,9 +1,17 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import React, { useState, useEffect, useRef } from "react";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  useMapEvents,
+} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import { useVisibleItems } from "../context/VisibleItemsContext";
+import CustomPopup from "./decorations/CustomPopup";
 
 // Fix Leaflet marker icon issue
 delete L.Icon.Default.prototype._getIconUrl;
@@ -15,10 +23,15 @@ L.Icon.Default.mergeOptions({
 // ✅ Define TypeScript Interface for Items
 interface Item {
   id: string;
+  title: string;
   description: string;
   latitude: number;
   longitude: number;
-  image_urls?: string[];
+  image_urls?: string | string[];
+  status: string;
+  last_seen_location: string;
+  found_location?: string;
+  created_at: string;
 }
 
 // ✅ Custom Icons for Different Item Types
@@ -49,13 +62,40 @@ const blueIcon = new L.Icon({
   popupAnchor: [1, -34],
 });
 
-const MapSection = () => {
+// Component to Track Map Bounds
+const MapEventHandler = ({
+  setMapBounds,
+}: {
+  setMapBounds: (bounds: L.LatLngBounds) => void;
+}) => {
+  useMapEvents({
+    moveend: (event) => {
+      setMapBounds(event.target.getBounds());
+    },
+  });
+  return null;
+};
+
+const MapSection: React.FC<{ setMapReady: (ready: boolean) => void }> = ({
+  setMapReady,
+}) => {
   const [currentPosition, setCurrentPosition] = useState<
     [number, number] | null
   >(null);
   const [loading, setLoading] = useState(true);
-  const [lostItems, setLostItems] = useState<Item[]>([]);
-  const [foundItems, setFoundItems] = useState<Item[]>([]);
+  const [items, setItems] = useState<Item[]>([]);
+  const [mapBounds, setMapBounds] = useState<L.LatLngBounds | null>(null);
+  const { setVisibleItems } = useVisibleItems(); // ✅ Ensure it's used correctly
+  const mapRef = useRef<L.Map | null>(null);
+  const [mapReady, setLocalMapReady] = useState(false); // ✅ Define mapReady
+
+  useEffect(() => {
+    if (mapRef.current) {
+      setMapBounds(mapRef.current.getBounds());
+      setLocalMapReady(true);
+      setMapReady(true); // ✅ Set map as ready
+    }
+  }, [mapRef.current]);
 
   // ✅ Fetch user's current location
   useEffect(() => {
@@ -81,31 +121,46 @@ const MapSection = () => {
     }
   }, []);
 
-  // ✅ Fetch lost & found items from the backend
+  // Fetch lost & found items
   useEffect(() => {
+    console.log("This is the ip address", process.env.id);
     const fetchItems = async () => {
       try {
-        const [lostResponse, foundResponse] = await Promise.all([
-          fetch("http://localhost:1111/items/lost-items"),
-          fetch("http://localhost:1111/items/found-items"),
-        ]);
+        const response = await fetch(
+          `http://${process.env.id}:1111/items/getall/all`
+        );
+        if (!response.ok) throw new Error("Failed to fetch items");
 
-        if (!lostResponse.ok || !foundResponse.ok) {
-          throw new Error("Failed to fetch items");
+        const data: Item[] = await response.json();
+        setItems(data);
+
+        // Wait for map to be ready before setting visible items
+        if (mapRef.current) {
+          const initialBounds = mapRef.current.getBounds();
+          const initialVisibleItems = data.filter((item) =>
+            initialBounds.contains(L.latLng(item.latitude, item.longitude))
+          );
+          setVisibleItems(initialVisibleItems);
         }
-
-        const lostData: Item[] = await lostResponse.json();
-        const foundData: Item[] = await foundResponse.json();
-
-        setLostItems(lostData);
-        setFoundItems(foundData);
       } catch (error) {
         console.error("Error fetching items:", error);
       }
     };
 
     fetchItems();
-  }, []);
+  }, [mapReady]);
+  // ✅ Update visible items when the map moves or zooms
+  useEffect(() => {
+    if (mapBounds && items.length > 0) {
+      const visibleItems = items.filter((item) =>
+        mapBounds.contains(L.latLng(item.latitude, item.longitude))
+      );
+
+      console.log("These are the current items", visibleItems);
+
+      setVisibleItems(visibleItems); // ✅ This will now work properly
+    }
+  }, [mapBounds, items, setVisibleItems]); // ✅ Removed `setVisibleItems` from dependencies
 
   return (
     <div className="relative w-full h-full md:h-full">
@@ -123,53 +178,33 @@ const MapSection = () => {
           center={currentPosition || [13.729252961011817, 100.775821879559]}
           zoom={13}
           className="w-full h-full" // ✅ Ensures it fits in mobile & desktop mode
+          whenReady={() => {
+            if (mapRef.current) {
+              setMapBounds(mapRef.current.getBounds());
+              setMapReady(true); // ✅ Mark map as loaded
+            }
+          }}
+          ref={mapRef} // ✅ Correctly store map reference
         >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
+          <MapEventHandler setMapBounds={setMapBounds} />
 
-          {/* ✅ Render Lost Items with Red Markers */}
-          {lostItems.map((item) => (
-            <Marker
-              key={item.id}
-              position={[item.latitude, item.longitude]}
-              icon={redIcon}
-            >
-              <Popup>
-                <strong>Lost Item</strong>
-                <p>{item.description}</p>
-                {item.image_urls && item.image_urls.length > 0 && (
-                  <img
-                    src={item.image_urls[0]}
-                    alt="Item"
-                    className="w-32 h-32"
-                  />
-                )}
-              </Popup>
-            </Marker>
-          ))}
-
-          {/* ✅ Render Found Items with Green Markers */}
-          {foundItems.map((item) => (
-            <Marker
-              key={item.id}
-              position={[item.latitude, item.longitude]}
-              icon={greenIcon}
-            >
-              <Popup>
-                <strong>Found Item</strong>
-                <p>{item.description}</p>
-                {item.image_urls && item.image_urls.length > 0 && (
-                  <img
-                    src={item.image_urls[0]}
-                    alt="Item"
-                    className="w-32 h-32"
-                  />
-                )}
-              </Popup>
-            </Marker>
-          ))}
+          {/* Render Items as Markers */}
+          {items
+            .filter((item) => item.status !== "claimed")
+            .map((item) => (
+              <Marker
+                key={item.id}
+                position={[item.latitude, item.longitude]}
+                icon={item.status == "lost" ? redIcon : greenIcon}
+              >
+                {/* Use CustomPopup component */}
+                <CustomPopup item={item} />
+              </Marker>
+            ))}
 
           {/* ✅ Current location marker */}
           {currentPosition && (

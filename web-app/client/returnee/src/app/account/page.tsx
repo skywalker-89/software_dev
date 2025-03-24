@@ -6,8 +6,10 @@ import PrivacyAndPolicy from "../../components/SettingsComponents/PrivacyAndPoli
 import AccountSetting from "../../components/SettingsComponents/AccountSetting";
 import ItemHistorySection from "../../components/SettingsComponents/ItemHistorySection";
 import Image from "next/image";
+import Cookies from "js-cookie";
+import toast, { Toaster } from "react-hot-toast"; // ✅ Import toast
 
-const API_URL = "http://localhost:1111/auth/me";
+const API_URL = `http://${process.env.id}:1111/auth/me`;
 
 interface SettingListProps {
   closeMenu: () => void;
@@ -37,6 +39,7 @@ const SettingList: React.FC<SettingListProps> = ({
   useEffect(() => {
     const fetchUserData = async () => {
       const token = localStorage.getItem("token");
+      console.log("This is the token", token);
 
       try {
         const response = await fetch(API_URL, {
@@ -46,6 +49,8 @@ const SettingList: React.FC<SettingListProps> = ({
             "Content-Type": "application/json",
           },
         });
+
+        console.log(response);
 
         if (!response.ok) {
           throw new Error("Failed to fetch user data");
@@ -83,7 +88,7 @@ const SettingList: React.FC<SettingListProps> = ({
 
     try {
       const response = await fetch(
-        "http://localhost:1111/auth/upload-profile-picture",
+        `http://${process.env.id}:1111/auth/upload-profile-picture`,
         {
           method: "POST",
           headers: {
@@ -92,6 +97,7 @@ const SettingList: React.FC<SettingListProps> = ({
           body: formData, // Send formData instead of JSON
         }
       );
+      toast.success("Profile Picture Updated!");
 
       if (!response.ok) {
         throw new Error("Failed to upload image");
@@ -121,7 +127,7 @@ const SettingList: React.FC<SettingListProps> = ({
     <div className="w-64 h-full bg-white p-4 shadow-lg md:shadow-none md:border-r border-gray-300 md:h-screen">
       <div className="text-center mb-6 hidden md:block">
         {/* Profile Picture */}
-        <div className="relative w-20 h-20 mx-auto rounded-full overflow-hidden group">
+        <div className="relative w-20 h-20 mx-auto rounded-full overflow-hidden group border-2 border-gray-100">
           {isUploading ? (
             <div className="w-full h-full flex items-center justify-center bg-gray-400 animate-pulse">
               <svg
@@ -208,6 +214,8 @@ const Logout: React.FC = () => {
   useEffect(() => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    // 🔥 Remove token from Cookies
+    Cookies.remove("token");
     router.push("/login");
   }, [router]);
   return null;
@@ -277,7 +285,7 @@ const AccountPage: React.FC = () => {
     try {
       setIsUploading(true);
       const response = await fetch(
-        "http://localhost:1111/auth/upload-profile-picture",
+        `http://${process.env.id}:1111/auth/upload-profile-picture`,
         {
           method: "POST",
           headers: {
@@ -321,13 +329,14 @@ const AccountPage: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen">
+      <Toaster position="bottom-right" />
       <Navbar />
       {/* 🔹 Mobile Profile Section */}
       <div className="p-4 md:hidden flex justify-between items-center bg-white border-b shadow">
         <div className="flex items-center space-x-4">
           {/* Profile Picture */}
           <div
-            className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-300 group mx-auto"
+            className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-300 group mx-auto border-2 border-gray-100"
             onClick={() => {
               setIsClicked(true); // ✅ Set clicked state
               document.getElementById("fileInput")?.click();

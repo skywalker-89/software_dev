@@ -66,7 +66,7 @@ exports.login = async (req, res) => {
         .json({ message: "Invalid email/phone or password" });
 
     // Generate token
-    const token = jwt.sign({ id: user.id }, "jwt_secret_key", {
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
       expiresIn: "365d",
     });
     res.json({
@@ -146,13 +146,15 @@ exports.googleAuthCallback = async (req, res) => {
     }
 
     // Generate JWT Token
-    const token = jwt.sign({ id: user.id }, "jwt_secret_key", {
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
       expiresIn: "365d",
     });
 
     // 🔹 Redirect back to frontend with token and user data
     return res.redirect(
-      `http://localhost:3000/google-auth-success?token=${token}&user=${encodeURIComponent(
+      `http://${
+        process.env.ID
+      }:3000/google-auth-success?token=${token}&user=${encodeURIComponent(
         JSON.stringify(user)
       )}`
     );
@@ -201,13 +203,15 @@ exports.facebookAuthCallback = async (req, res) => {
     }
 
     // Generate JWT Token
-    const token = jwt.sign({ id: user.id }, "jwt_secret_key", {
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
       expiresIn: "365d",
     });
 
     // 🔹 Redirect back to frontend with token and user data
     return res.redirect(
-      `http://localhost:3000/facebook-auth-success?token=${token}&user=${encodeURIComponent(
+      `http://${
+        process.env.ID
+      }:3000/facebook-auth-success?token=${token}&user=${encodeURIComponent(
         JSON.stringify(user)
       )}`
     );

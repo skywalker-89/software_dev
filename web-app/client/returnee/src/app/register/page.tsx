@@ -28,13 +28,16 @@ const RegisterPage: React.FC = () => {
     }
 
     try {
-      const response = await axios.post("http://localhost:1111/auth/register", {
-        email,
-        password,
-        firstName,
-        lastName,
-        phoneNumber,
-      });
+      const response = await axios.post(
+        `http://${process.env.id}:1111/auth/register`,
+        {
+          email,
+          password,
+          firstName,
+          lastName,
+          phoneNumber,
+        }
+      );
 
       console.log("Registration successful", response.data);
       setSuccessMessage("Account registered successfully! Redirecting...");
@@ -56,12 +59,12 @@ const RegisterPage: React.FC = () => {
 
   const handleGoogleLogin = () => {
     // Redirect to backend Google OAuth endpoint
-    window.location.href = "http://localhost:1111/auth/google";
+    window.location.href = `http://${process.env.id}:1111/auth/google`;
   };
 
   // 🔹 Facebook Login Function
   const handleFacebookLogin = () => {
-    window.location.href = "http://localhost:1111/auth/facebook"; // Redirect to backend Facebook OAuth
+    window.location.href = `http://${process.env.id}:1111/auth/facebook`; // Redirect to backend Facebook OAuth
   };
 
   return (
@@ -180,7 +183,7 @@ const RegisterPage: React.FC = () => {
       {/* Right Side - Image Section */}
       <div className="hidden md:flex w-1/2 relative">
         <Image
-          src="/assets/loginPagePic5.jpg"
+          src="/loginPagePic5.jpg"
           alt="Register Page Image"
           fill
           style={{ objectFit: "cover" }}

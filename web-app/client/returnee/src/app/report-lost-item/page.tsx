@@ -84,7 +84,7 @@ const ReportLostItem = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:1111/items/post-lost-item",
+        `http://${process.env.id}:1111/items/post-lost-item`,
         {
           method: "POST",
           body: formData,

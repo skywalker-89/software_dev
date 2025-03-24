@@ -39,4 +39,7 @@ router.get("/specified/:id", itemsController.getItemBySpecificId);
 // 🟢 Claim an Item
 router.put("/claim-item/:id", itemsController.setClaimItem);
 
+// get all items
+router.get("/getall/all", itemsController.getAllItems);
+
 module.exports = router;

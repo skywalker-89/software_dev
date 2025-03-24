@@ -175,5 +175,17 @@ sunday 09/03/2025
 
 pass in chatId search for participantsNUMIDs and fetch their everyinfo of the user and chatTitle to make a gmail confirmation
 
+
 ***** generate the qr code in gmail and enable qr code scan ******
 
+>>> fix the item filter not display claimed items on the map and on the cardSection
+>>> if i clicked on the lost button it will show only lost items but when i clicked on found botton it will only shows the found
+items
+>>> and when i changeed the time the item must show only the item within that peroid of time
+
+>>> change this request button there if the item is calimed the request button in the item page will be "Claimed" (yellow-orange) 
+
+>>>> make item card section be pages that we can navigate through 
+
+>>>> work on the item history page 6 items a row clickable and if the item is claimed change the send button to be 
+yellow claimed 

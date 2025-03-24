@@ -8,6 +8,15 @@ const nextConfig: NextConfig = {
       "example.com",
       "res.cloudinary.com",
     ], // Add the domain of your image source
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**", // Allow external images
+      },
+    ],
+  },
+  env: {
+    id: process.env.ID,
   },
   experimental: {},
 };

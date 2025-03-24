@@ -4,6 +4,7 @@ const mongoose = require("mongoose"); // Import mongoose
 const User = require("../models/user"); // ✅ Import User model
 const multer = require("multer");
 const cloudinary = require("../config/cloudinaryConfig");
+const dotenv = require("dotenv");
 
 // Configure Multer for file handling
 const storage = multer.memoryStorage(); // Store in memory before uploading to Cloudinary
@@ -171,7 +172,7 @@ exports.createChatRoom = async (req, res) => {
       console.log("✅ New chat created:", chatRoom._id);
     }
 
-    res.redirect(302, "http://localhost:3000/chat");
+    res.redirect(302, `http://${process.env.ID}:3000/chat`);
   } catch (error) {
     console.error("Error creating chat room:", error);
     res.status(500).json({ error: "Failed to create chat room" });

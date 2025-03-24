@@ -22,32 +22,48 @@ const QRScan: React.FC<QRScanProps> = ({ onClose, onScanSuccess }) => {
   }, [onClose]);
 
   useEffect(() => {
-    if (scannerRef.current) return; // Prevent multiple scanner instances
+    if (scannerRef.current) return;
 
     const scanner = new Html5Qrcode("qr-reader");
     scannerRef.current = scanner;
 
     const qrConfig = {
       fps: 10,
-      qrbox: { width: 300, height: 300 }, // Keeps a square scanning area
+      qrbox: { width: 300, height: 300 },
     };
 
+    const handleScanSuccess = (result: string) => {
+      stopScanner();
+      onScanSuccessRef.current(result);
+      onCloseRef.current();
+    };
+
+    const handleScanError = () => {
+      setErrorMessage("Place the QR code inside the scanner area.");
+    };
+
+    // First attempt: Try environment-facing camera
     scanner
       .start(
         { facingMode: "environment" },
         qrConfig,
-        (result) => {
-          stopScanner();
-          onScanSuccessRef.current(result);
-          onCloseRef.current();
-        },
-        () => {
-          setErrorMessage("Place the QR code inside the scanner area.");
-        }
+        handleScanSuccess,
+        handleScanError
       )
-      .catch((err) => {
-        setErrorMessage("Failed to access camera. Check permissions.");
-        console.error(err);
+      .catch((firstError) => {
+        console.log("Rear camera failed, trying default...", firstError);
+        // Second attempt: Try without specific constraints
+        scanner
+          .start(
+            { facingMode: "user" }, // Fallback to user-facing or default
+            qrConfig,
+            handleScanSuccess,
+            handleScanError
+          )
+          .catch((secondError) => {
+            console.log("Default camera failed", secondError);
+            setErrorMessage("Failed to access camera. Check permissions.");
+          });
       });
 
     return () => {

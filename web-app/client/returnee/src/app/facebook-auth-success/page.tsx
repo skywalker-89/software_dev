@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 
 const FacebookAuthRedirect = () => {
   const router = useRouter();
@@ -18,6 +19,12 @@ const FacebookAuthRedirect = () => {
         // Store user & token in localStorage
         localStorage.setItem("token", token);
         localStorage.setItem("user", JSON.stringify(user));
+
+        Cookies.set("token", token, {
+          expires: 365,
+          path: "/",
+          sameSite: "lax", // Prevents cross-site request issues
+        });
 
         console.log("✅ Facebook Login Success - Saved User:", user); // Debugging Log
 

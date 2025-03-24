@@ -6,11 +6,28 @@ import React from "react";
 // Dynamically import MapSection without SSR
 const MapSection = dynamic(() => import("../MapSection"), { ssr: false });
 
-const MapSectionWrapper = () => {
+export interface Item {
+  id: string;
+  description: string;
+  latitude: number;
+  longitude: number;
+  image_urls?: string[];
+  status: string;
+}
+
+interface MapSectionWrapperProps {
+  setMapReady: (ready: boolean) => void; // ✅ Accept setMapReady prop
+}
+
+const MapSectionWrapper: React.FC<MapSectionWrapperProps> = ({
+  setMapReady,
+}) => {
+  // const [visibleItems, setVisibleItems] = useState<Item[]>([]); // ✅ Explicitly typed
+
   return (
     <div className="h-full w-full">
-      {/* Dynamically loaded map */}
-      <MapSection />
+      {/* Pass setVisibleItems correctly */}
+      <MapSection setMapReady={setMapReady} />
     </div>
   );
 };

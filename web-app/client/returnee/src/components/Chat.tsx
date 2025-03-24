@@ -15,7 +15,7 @@ import ReSchedule from "./popup/ReSchedule";
 import QRScan from "./popup/QrScan";
 import toast, { Toaster } from "react-hot-toast";
 
-const socket = io("http://localhost:1111"); // Adjust based on backend
+const socket = io(`http://${process.env.id}:1111`); // Adjust based on backend
 
 interface ChatProps {
   chatId: string | null;
@@ -49,6 +49,7 @@ const Chat: React.FC<ChatProps> = ({ chatId, chats, onBack, userId }) => {
   const [isScheduleModalOpen, setIsScheduleRequestModalOpen] = useState(false);
   const [isQRScanOpen, setIsQRScanOpen] = useState(false);
   const [profileModal, setProfileModal] = useState<string | null>(null); // Store profile image for modal
+  const [cameraAllowed, setCameraAllowed] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [message, setMessage] = useState("");
@@ -124,7 +125,7 @@ const Chat: React.FC<ChatProps> = ({ chatId, chats, onBack, userId }) => {
       const fetchReceiverUser = async () => {
         try {
           const response = await fetch(
-            `http://localhost:1111/auth/user/${receiverId}`
+            `http://${process.env.id}:1111/auth/user/${receiverId}`
           );
 
           if (!response.ok) {
@@ -155,7 +156,7 @@ const Chat: React.FC<ChatProps> = ({ chatId, chats, onBack, userId }) => {
       console.log("This is the chatKey:", chat?.chatKey);
 
       // ✅ Mark messages as read when chat is opened
-      fetch("http://localhost:1111/chat/mark-messages-read", {
+      fetch(`http://${process.env.id}:1111/chat/mark-messages-read`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ chatId, userId }),
@@ -263,7 +264,7 @@ const Chat: React.FC<ChatProps> = ({ chatId, chats, onBack, userId }) => {
     images.forEach((image) => formData.append("images", image)); // Attach images
 
     try {
-      const response = await fetch("http://localhost:1111/chat/send", {
+      const response = await fetch(`http://${process.env.id}:1111/chat/send`, {
         method: "POST",
         body: formData, // ✅ Must use FormData to send images + text
       });
@@ -309,6 +310,24 @@ const Chat: React.FC<ChatProps> = ({ chatId, chats, onBack, userId }) => {
     }
   };
 
+  const handleQRButtonClick = async () => {
+    try {
+      // Directly request camera access on button click
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+
+      // Immediately stop the stream (we just needed permission)
+      stream.getTracks().forEach((track) => track.stop());
+
+      // Set permission flag and open scanner
+      setCameraAllowed(true);
+      setIsQRScanOpen(true);
+    } catch (error) {
+      console.error("Camera access denied:", error);
+      toast.error("Camera access is required to scan QR codes");
+      setCameraAllowed(false);
+    }
+  };
+
   // Auto-scroll when messages update
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -324,7 +343,7 @@ const Chat: React.FC<ChatProps> = ({ chatId, chats, onBack, userId }) => {
   }
 
   return (
-    <div className="flex-1 h-full bg-gray-100 flex flex-col">
+    <div className="flex-1 h-full bg-gray-100 flex flex-col mt-4">
       {/* Header */}
       <Toaster position="bottom-right" />
       <div className="flex items-center justify-between p-4 border-b bg-white shadow-md sticky top-0 z-10">
@@ -369,7 +388,7 @@ const Chat: React.FC<ChatProps> = ({ chatId, chats, onBack, userId }) => {
           </button>
           <button
             className="p-2 rounded-full bg-gray-200 hover:bg-gray-300"
-            onClick={() => setIsQRScanOpen(true)}
+            onClick={handleQRButtonClick}
           >
             <QrCodeIcon className="h-5 w-5 text-gray-700" />
           </button>
@@ -498,7 +517,9 @@ const Chat: React.FC<ChatProps> = ({ chatId, chats, onBack, userId }) => {
               if (senderId === receiverId && id === chat?.chatKey) {
                 // Make a PUT request to update the item status to 'claimed'
                 const response = await fetch(
-                  `http://localhost:1111/items/claim-item/${id}?time=${encodeURIComponent(
+                  `http://${
+                    process.env.id
+                  }:1111/items/claim-item/${id}?time=${encodeURIComponent(
                     new Date().toISOString()
                   )}&userId=${encodeURIComponent(senderId)}`,
                   {

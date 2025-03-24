@@ -5,11 +5,11 @@ import { useRouter } from "next/navigation";
 interface ItemCardProps {
   id: string;
   title: string;
-  status: "lost" | "found";
+  status: string;
   description: string;
   lastSeen: string;
   time: string;
-  images: string[]; // Array of image URLs
+  images: string[] | string; // Array of image URLs
 }
 
 const ItemCard: React.FC<ItemCardProps> = ({
@@ -40,7 +40,7 @@ const ItemCard: React.FC<ItemCardProps> = ({
 
   return (
     <div
-      className="rounded-lg border bg-white shadow-sm hover:shadow-md transition-shadow duration-200 relative"
+      className="rounded-lg border max-h-fit bg-white shadow-sm hover:shadow-md transition-shadow duration-200 relative"
       onClick={() => router.push(`/item/${id}`)}
     >
       {/* ✅ Image Carousel */}
@@ -103,7 +103,8 @@ const ItemCard: React.FC<ItemCardProps> = ({
         <p className="text-sm text-gray-600 mt-2">{description}</p>
         <div className="mt-4 text-sm text-gray-500">
           <p>
-            <span className="font-bold">Last Seen:</span> {lastSeen}
+            <span className="font-bold">Last Seen:</span>{" "}
+            {lastSeen === " " ? lastSeen : " "}
           </p>
           <p>
             <span className="font-bold">Time:</span> {time}

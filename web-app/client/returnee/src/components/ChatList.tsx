@@ -43,7 +43,7 @@ const ChatList: React.FC<ChatListProps> = ({ chats, onSelectChat, userId }) => {
                 chat.unreadCount = 0;
 
                 // ✅ Send request to backend to mark messages as read
-                fetch("http://localhost:1111/chat/mark-messages-read", {
+                fetch(`http://${process.env.id}:1111/chat/mark-messages-read`, {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({ chatId: chat.id, userId }),
