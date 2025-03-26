@@ -91,10 +91,18 @@ const ItemCard: React.FC<ItemCardProps> = ({
       {/* ✅ Status Bar */}
       <div
         className={`h-8 w-full flex items-center justify-center text-white text-sm font-bold ${
-          status === "lost" ? "bg-red-500" : "bg-green-500"
+          status === "lost"
+            ? "bg-red-500"
+            : status === "found"
+            ? "bg-green-500"
+            : "bg-yellow-600"
         }`}
       >
-        {status === "lost" ? "Lost Item" : "Found Item"}
+        {status === "lost"
+          ? "Lost Item"
+          : status === "found"
+          ? "Found Item"
+          : "Claimed Item"}
       </div>
 
       {/* ✅ Content Section */}

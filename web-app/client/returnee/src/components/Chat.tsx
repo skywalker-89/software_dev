@@ -49,7 +49,6 @@ const Chat: React.FC<ChatProps> = ({ chatId, chats, onBack, userId }) => {
   const [isScheduleModalOpen, setIsScheduleRequestModalOpen] = useState(false);
   const [isQRScanOpen, setIsQRScanOpen] = useState(false);
   const [profileModal, setProfileModal] = useState<string | null>(null); // Store profile image for modal
-  const [cameraAllowed, setCameraAllowed] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [message, setMessage] = useState("");
@@ -310,24 +309,6 @@ const Chat: React.FC<ChatProps> = ({ chatId, chats, onBack, userId }) => {
     }
   };
 
-  const handleQRButtonClick = async () => {
-    try {
-      // Directly request camera access on button click
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-
-      // Immediately stop the stream (we just needed permission)
-      stream.getTracks().forEach((track) => track.stop());
-
-      // Set permission flag and open scanner
-      setCameraAllowed(true);
-      setIsQRScanOpen(true);
-    } catch (error) {
-      console.error("Camera access denied:", error);
-      toast.error("Camera access is required to scan QR codes");
-      setCameraAllowed(false);
-    }
-  };
-
   // Auto-scroll when messages update
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -388,7 +369,7 @@ const Chat: React.FC<ChatProps> = ({ chatId, chats, onBack, userId }) => {
           </button>
           <button
             className="p-2 rounded-full bg-gray-200 hover:bg-gray-300"
-            onClick={handleQRButtonClick}
+            onClick={() => setIsQRScanOpen(true)}
           >
             <QrCodeIcon className="h-5 w-5 text-gray-700" />
           </button>

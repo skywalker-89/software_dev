@@ -183,7 +183,7 @@ const CardSection: React.FC<CardSectionProps> = ({
 
     return (
       item.status.toLowerCase() === category.toLowerCase() && // ✅ Match selected category
-      item.status.toLowerCase() !== "claimed" && // ✅ Exclude claimed items
+      // item.status.toLowerCase() !== "claimed" && // ✅ Exclude claimed items
       (!selectedDateTime || itemDate >= selectedDateTime) && // ✅ Filter by time (after selectedDate)
       (item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.description.toLowerCase().includes(searchQuery.toLowerCase()))

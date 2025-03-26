@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 
 interface SearchSectionProps {
-  onCategoryChange: (category: "lost" | "found") => void;
+  onCategoryChange: (category: "lost" | "found" | "claimed") => void;
   onSearchChange: (query: string) => void; // Notify parent about search input
   onDateChange: (date: string) => void;
 }
@@ -64,6 +64,12 @@ const SearchSection: React.FC<SearchSectionProps> = ({
           onClick={() => onCategoryChange("found")}
         >
           Found Items
+        </button>
+        <button
+          className="px-4 py-2  w-fit rounded bg-yellow-600 text-white flex-shrink-0"
+          onClick={() => onCategoryChange("claimed")}
+        >
+          Claimed Items
         </button>
         {/* this is the time filter  */}
         <input

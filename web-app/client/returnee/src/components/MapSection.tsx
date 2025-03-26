@@ -194,7 +194,7 @@ const MapSection: React.FC<{ setMapReady: (ready: boolean) => void }> = ({
 
           {/* Render Items as Markers */}
           {items
-            .filter((item) => item.status !== "claimed")
+            .filter((item) => item.status !== "none")
             .map((item) => (
               <Marker
                 key={item.id}
